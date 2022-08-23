@@ -37,13 +37,12 @@
 
     <properties>
         <!-- Dependency versions -->
-        <pushy.version>0.13.9</pushy.version>
-        <netty.version>4.1.25.Final</netty.version>
-        <netty-tcnative.version>2.0.25.Final</netty-tcnative.version>
-        <jackson-databind-nullable.version>0.2.1</jackson-databind-nullable.version>
+        <pushy.version>0.15.1</pushy.version>
+        <netty.version>4.1.79.Final</netty.version>
+        <netty-tcnative.version>2.0.54.Final</netty-tcnative.version>
+        <jackson-databind-nullable.version>0.2.3</jackson-databind-nullable.version>
         <openapi-generator-maven-plugin.version>5.4.0</openapi-generator-maven-plugin.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
-        <mapstruct.version>1.4.2.Final</mapstruct.version>
     </properties>
 
     <dependencyManagement>
@@ -181,17 +180,6 @@
                 <groupId>commons-beanutils</groupId>
                 <artifactId>commons-beanutils</artifactId>
                 <version>${commons-beanutils.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.mapstruct</groupId>
-                <artifactId>mapstruct</artifactId>
-                <version>${mapstruct.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.mapstruct</groupId>
-                <artifactId>mapstruct-processor</artifactId>
-                <version>${mapstruct.version}</version>
-                <scope>provided</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

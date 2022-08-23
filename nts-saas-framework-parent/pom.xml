@@ -5,7 +5,7 @@
     <parent>
         <groupId>tech.jhipster</groupId>
         <artifactId>jhipster-parent</artifactId>
-        <version>7.7.0</version>
+        <version>7.9.2</version>
     </parent>
 
     <groupId>org.nentangso</groupId>
@@ -41,13 +41,13 @@
         <!-- The nts-saas-framework version should be the same as the artifact version above -->
         <nts-saas-framework.version>1.0.0-SNAPSHOT</nts-saas-framework.version>
         <!-- The jhipster-framework version should be the same as the artifact version above -->
-        <jhipster-framework.version>7.6.0</jhipster-framework.version>
+        <jhipster-framework.version>7.9.2</jhipster-framework.version>
         <!-- The spring-boot version should be the same as the parent version above -->
-        <spring-boot.version>2.6.3</spring-boot.version>
+        <spring-boot.version>2.7.2</spring-boot.version>
 
         <!-- Build properties -->
         <java.version>11</java.version>
-        <maven.version>3.3.9</maven.version>
+        <maven.version>3.2.5</maven.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
