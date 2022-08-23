@@ -36,10 +36,61 @@
     </developers>
 
     <properties>
+        <!-- Build properties -->
+        <java.version>11</java.version>
+        <maven.version>3.2.5</maven.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven-release-plugin.version>3.0.0-M6</maven-release-plugin.version>
+        <versions-maven-plugin.version>2.8.1</versions-maven-plugin.version>
     </properties>
+
+    <scm>
+        <connection>scm:git:git@github.com:nentangso/nts-saas.git</connection>
+        <url>https://github.com/nentangso/nts-saas</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <modules>
         <module>nts-saas-framework-parent</module>
     </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>${maven-release-plugin.version}</version>
+                <configuration>
+                    <tagNameFormat>nts-saas-bom/v@{project.version}</tagNameFormat>
+                    <releaseProfiles>deploy-github</releaseProfiles>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>deploy-github</id>
+            <activation>
+                <property>
+                    <name>github</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>github</id>
+                    <url>https://maven.pkg.github.com/nentangso/nts-saas/</url>
+                </snapshotRepository>
+                <repository>
+                    <id>github</id>
+                    <url>https://maven.pkg.github.com/nentangso/nts-saas/</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+    </profiles>
 </project>
