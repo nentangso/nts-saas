@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.nentangso</groupId>
+    <artifactId>nts-saas</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>SaaS parent POM power by nentangso.org</name>
+    <description>Software as a Service power by nentangso.org</description>
+    <url>https://github.com/nentangso/nts-saas</url>
+
+    <licenses>
+        <license>
+            <name>GNU General Public License v3.0</name>
+            <comments>Permissions of this strong copyleft license are conditioned on making available complete source
+                code of licensed works and modifications, which include larger works using a licensed work, under the
+                same license. Copyright and license notices must be preserved. Contributors provide an express grant of
+                patent rights.
+            </comments>
+        </license>
+    </licenses>
+    <organization>
+        <name>nentangso.org</name>
+        <url>https://nentangso.org</url>
+    </organization>
+    <developers>
+        <developer>
+            <name>Tien Tran</name>
+            <email>tientq@outlook.com</email>
+            <organization>nentangso.org</organization>
+            <organizationUrl>https://nentangso.org</organizationUrl>
+            <url>https://github.com/tientq</url>
+        </developer>
+    </developers>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <modules>
+        <module>nts-saas-framework-parent</module>
+    </modules>
+</project>
