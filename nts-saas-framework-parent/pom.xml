@@ -10,7 +10,7 @@
 
     <groupId>org.nentangso</groupId>
     <artifactId>nts-saas-framework-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
 
     <name>SaaS server-side parent POM</name>
@@ -39,7 +39,7 @@
 
     <properties>
         <!-- The nts-saas-framework version should be the same as the artifact version above -->
-        <nts-saas-framework.version>1.0.0-SNAPSHOT</nts-saas-framework.version>
+        <nts-saas-framework.version>1.0.0</nts-saas-framework.version>
         <!-- The jhipster-framework version should be the same as the artifact version above -->
         <jhipster-framework.version>7.9.2</jhipster-framework.version>
         <!-- The spring-boot version should be the same as the parent version above -->
@@ -61,7 +61,7 @@
     <scm>
         <connection>scm:git:git@github.com:nentangso/nts-saas.git</connection>
         <url>https://github.com/nentangso/nts-saas</url>
-        <tag>HEAD</tag>
+        <tag>v1.0.0</tag>
     </scm>
 
     <modules>
