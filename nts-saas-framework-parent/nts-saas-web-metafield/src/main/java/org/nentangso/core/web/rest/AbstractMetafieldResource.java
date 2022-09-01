@@ -77,7 +77,7 @@ public abstract class AbstractMetafieldResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated metafield,
      * or with status {@code 400 (Bad Request)} if the customerDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the metafield couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     * @throws IOException if the Location URI syntax is incorrect.
      */
     protected ResponseEntity<MetafieldDTO> updateMetafield(long ownerId, long id, MetafieldInput metafield, HttpServletRequest request) throws IOException {
         log.debug("REST request to update metafield : {}", metafield);
