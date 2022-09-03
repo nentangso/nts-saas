@@ -195,19 +195,16 @@ public class MetafieldDTO extends AbstractAuditingDTO implements Serializable {
             this.updatedAt = dto.getCreatedAt();
         }
 
-        @Deprecated
         public Builder id(Long id) {
             this.id = id;
             return this;
         }
 
-        @Deprecated
         public Builder ownerResource(String ownerResource) {
             this.ownerResource = ownerResource;
             return this;
         }
 
-        @Deprecated
         public Builder ownerId(Long ownerId) {
             this.ownerId = ownerId;
             return this;
@@ -273,25 +270,21 @@ public class MetafieldDTO extends AbstractAuditingDTO implements Serializable {
             return this;
         }
 
-        @Deprecated
         public Builder createdBy(String createdBy) {
             this.createdBy = createdBy;
             return this;
         }
 
-        @Deprecated
         public Builder createdAt(Instant createdAt) {
             this.createdAt = createdAt;
             return this;
         }
 
-        @Deprecated
         public Builder updatedBy(String updatedBy) {
             this.updatedBy = updatedBy;
             return this;
         }
 
-        @Deprecated
         public Builder updatedAt(Instant updatedAt) {
             this.updatedAt = updatedAt;
             return this;
