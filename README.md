@@ -28,14 +28,17 @@ Modules:
 
 ### Scripts
 
-Release new version, upload to github
+Prepare to release new version
 
 ```shell
-./mvnw -B release:clean release:prepare release:perform -Pdeploy-github
+./mvnw -B release:clean release:prepare
 ```
 
 Deploy current version
 
 ```shell
-./mvnw -B clean deploy -Pdeploy-github
+# Deploy to maven central
+./mvnw -B clean deploy
+# Deploy to github
+./mvnw -B clean deploy -Dgithub=true
 ```
