@@ -30,7 +30,7 @@ jobs:
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
       - name: Publish to the Maven Central Repository
-        run: mvn -B clean package deploy -Pdeploy-central
+        run: mvn -B clean deploy
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
@@ -41,6 +41,6 @@ jobs:
           distribution: 'adopt'
           cache: maven
       - name: Publish to GitHub Packages
-        run: mvn -B clean package deploy -Pdeploy-github
+        run: mvn -B clean deploy -Dgithub=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
