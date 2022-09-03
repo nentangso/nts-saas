@@ -17,10 +17,9 @@ categories:
     labels:
       - 'area: bug'
       - 'pr: bug-fix'
-      - 'pr: bugfix'
   - title: 🎁 Framework
     labels:
-      - 'theme: framework'
+      - 'theme: nts-saas-framework'
   - title: 🖥️ Frontend
     labels:
       - 'theme: front'
@@ -31,7 +30,7 @@ categories:
     labels:
       - 'theme: OIDC/OAuth2'
       - 'theme: security'
-      - 'theme: keycloak"'
+      - 'theme: keycloak'
   - title: 🪶 Maven
     labels:
       - 'theme: maven'
@@ -39,7 +38,7 @@ categories:
     labels:
       - 'theme: gradle'
   - title: 📝 Documentation
-    label: 'area: documentation:books:'
+    label: 'area: documentation :books:'
   - title: 📦 Dependency updates
     label: 'theme: dependencies'
   - title: 💩 Spam/Invalid
