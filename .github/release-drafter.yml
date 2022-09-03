@@ -1,0 +1,48 @@
+template: |
+  ## What’s Changed
+
+  $CHANGES
+
+exclude-labels:
+  - 'skip-changelog'
+exclude-contributors:
+  - 'app/dependabot'
+categories:
+  - title: 💎 Features & Enhancements
+    labels:
+      - 'area: enhancement :wrench:'
+      - 'changes: major :star:'
+      - 'changes: minor'
+  - title: 🐞 Bug Fixes
+    labels:
+      - 'area: bug'
+      - 'pr: bug-fix'
+      - 'pr: bugfix'
+  - title: 🎁 Framework
+    labels:
+      - 'theme: framework'
+  - title: 🖥️ Frontend
+    labels:
+      - 'theme: front'
+      - 'theme: vue'
+      - 'theme: angular'
+      - 'theme: react'
+  - title: 🔒 Authentication/Security
+    labels:
+      - 'theme: OIDC/OAuth2'
+      - 'theme: security'
+      - 'theme: keycloak"'
+  - title: 🪶 Maven
+    labels:
+      - 'theme: maven'
+  - title: 🐘 Gradle
+    labels:
+      - 'theme: gradle'
+  - title: 📝 Documentation
+    label: 'area: documentation:books:'
+  - title: 📦 Dependency updates
+    label: 'theme: dependencies'
+  - title: 💩 Spam/Invalid
+    labels:
+      - 'spam'
+      - 'area: invalid'

@@ -1,0 +1,10 @@
+'theme: CI Builds':
+  - .github/**/*
+  - azure-pipelines.yml
+
+'theme: dependencies':
+  - pom.xml
+  - '**/pom.xml'
+
+'theme: framework':
+  - 'nts-saas-framework-parent/**'
