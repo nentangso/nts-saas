@@ -18,9 +18,9 @@ public class NtsGlobalIdUtils {
     /**
      * GraphQL global id to legacy resource id
      *
-     * @param id
-     * @param resourceName
-     * @return
+     * @param id the global id
+     * @param resourceName the name of resource
+     * @return the legacy id
      */
     public static Long toLocalId(String id, String resourceName) {
         if (!RESOURCE_NAME_PATTERN.matcher(resourceName).matches()) {
@@ -40,9 +40,9 @@ public class NtsGlobalIdUtils {
     /**
      * GraphQL global ids to legacy resource ids
      *
-     * @param ids
-     * @param resourceName
-     * @return
+     * @param ids the global ids
+     * @param resourceName the name of resource
+     * @return the list of legacy ids
      */
     public static List<Long> toLocalIds(List<String> ids, String resourceName) {
         return Optional.ofNullable(ids).orElseGet(Collections::emptyList)
@@ -55,9 +55,9 @@ public class NtsGlobalIdUtils {
     /**
      * GraphQL global ids to legacy resource ids
      *
-     * @param ids
-     * @param resourceName
-     * @return
+     * @param ids the global ids
+     * @param resourceName the name of resource
+     * @return the set of legacy ids
      */
     public static Set<Long> toLocalIds(Set<String> ids, String resourceName) {
         return Optional.ofNullable(ids).orElseGet(Collections::emptySet)
@@ -70,9 +70,9 @@ public class NtsGlobalIdUtils {
     /**
      * Legacy resource id to GraphQL global id
      *
-     * @param legacyResourceId
-     * @param resourceName
-     * @return
+     * @param legacyResourceId the legacy id
+     * @param resourceName the name of resource
+     * @return the global id
      */
     public static String toGlobalId(Long legacyResourceId, String resourceName) {
         if (!RESOURCE_NAME_PATTERN.matcher(resourceName).matches()) {

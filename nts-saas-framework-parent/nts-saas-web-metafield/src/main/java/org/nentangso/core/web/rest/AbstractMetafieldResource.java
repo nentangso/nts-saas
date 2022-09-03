@@ -71,9 +71,10 @@ public abstract class AbstractMetafieldResource {
     /**
      * {@code PUT  /metafields/:id} : Updates an existing metafield.
      *
-     * @param ownerId   the owner id
+     * @param ownerId   the owner id.
      * @param id        the id of the metafield to save.
      * @param metafield the metafield to update.
+     * @param request   the http servlet request.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated metafield,
      * or with status {@code 400 (Bad Request)} if the customerDTO is not valid,
      * or with status {@code 500 (Internal Server Error)} if the metafield couldn't be updated.

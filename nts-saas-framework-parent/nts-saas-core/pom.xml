@@ -46,13 +46,7 @@
         </dependency>
         <dependency>
             <groupId>org.zalando</groupId>
-            <artifactId>problem-spring-web</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.zalando</groupId>
-                    <artifactId>problem-spring-web</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>problem-spring-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
