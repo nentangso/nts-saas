@@ -10,18 +10,34 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    labels:
+      - 'theme: CI Builds'
+      - 'theme: dependencies'
+      - 'skip-changelog'
 
   - package-ecosystem: "maven"
     directory: "/"
     schedule:
       interval: "daily"
+    labels:
+      - 'theme: java'
+      - 'theme: dependencies'
+      - 'skip-changelog'
 
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "daily"
+    labels:
+      - 'theme: front'
+      - 'theme: dependencies'
+      - 'skip-changelog'
 
   - package-ecosystem: "gitsubmodule"
     directory: "/"
     schedule:
       interval: "daily"
+    labels:
+      - 'theme: submodules'
+      - 'theme: dependencies'
+      - 'skip-changelog'
