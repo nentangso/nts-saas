@@ -1,8 +1,13 @@
 name: Publish package to the Maven Central Repository and GitHub Packages
 
 on:
-  release:
-    types: [created]
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    # Publish semver tags as releases.
+    tags:
+      - 'v*.*.*'
 
 jobs:
   publish:
