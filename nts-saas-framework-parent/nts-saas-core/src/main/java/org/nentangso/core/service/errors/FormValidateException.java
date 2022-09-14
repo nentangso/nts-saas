@@ -11,7 +11,7 @@ import java.util.*;
 import static java.util.stream.Collectors.*;
 import static java.util.stream.Collectors.toList;
 
-@SuppressWarnings("unused")
+@SuppressWarnings("java:S110") // Inheritance tree of classes should not be too deep
 public class FormValidateException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 

@@ -5,7 +5,7 @@ import org.springframework.validation.BindingResult;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings("unused")
+@SuppressWarnings("java:S110") // Inheritance tree of classes should not be too deep
 public class DomainValidationException extends FormValidateException {
     private static final long serialVersionUID = 1L;
 
