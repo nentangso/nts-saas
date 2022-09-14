@@ -20,6 +20,8 @@ import java.time.Instant;
 @Entity
 @Table(name = "nts_outbox_events")
 public class OutboxEventEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     /**
      * Id
      */
