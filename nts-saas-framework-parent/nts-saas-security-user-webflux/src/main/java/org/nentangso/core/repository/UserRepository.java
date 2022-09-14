@@ -46,7 +46,7 @@ public interface UserRepository extends R2dbcRepository<UserEntity, String>, Use
     Mono<Void> deleteAllUserAuthorities();
 
     @Query("DELETE FROM nts_user_authority WHERE user_id = :userId")
-    Mono<Void> deleteUserAuthorities(Long userId);
+    Mono<Void> deleteUserAuthorities(String userId);
 }
 
 interface UserRepositoryInternal {
