@@ -40,7 +40,15 @@ public class NtsTextUtils {
         return code;
     }
 
+    @Deprecated(forRemoval = true, since = "1.0.4")
     public static String removeVietnameseChar(String input) {
+        return unaccentVietnamese(input);
+    }
+
+    public static String unaccentVietnamese(String input) {
+        if (StringUtils.isEmpty(input)) {
+            return input;
+        }
         input = input.replaceAll("[àáạảãâầấậẩẫăằắặẳẵ]", "a");
         input = input.replaceAll("[èéẹẻẽêềếệểễ]", "e");
         input = input.replaceAll("[ìíịỉĩ]", "i");
