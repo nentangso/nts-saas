@@ -6,6 +6,7 @@
         <groupId>tech.jhipster</groupId>
         <artifactId>jhipster-parent</artifactId>
         <version>7.9.3</version>
+        <relativePath/>
     </parent>
 
     <groupId>org.nentangso</groupId>
