@@ -17,18 +17,18 @@ public class NtsNumberUtils {
             return (BigDecimal) value;
         }
         if (value instanceof Integer) {
-            return new BigDecimal((int) value);
+            return BigDecimal.valueOf((int) value);
         }
         if (value instanceof Long) {
-            return new BigDecimal((long) value);
+            return BigDecimal.valueOf((long) value);
         }
         if (value instanceof Float) {
-            return new BigDecimal((float) value);
+            return BigDecimal.valueOf((float) value);
         }
         if (value instanceof Double) {
-            return new BigDecimal((double) value);
+            return BigDecimal.valueOf((double) value);
         }
-        return null;
+        throw new ClassCastException("Value type is not supported. Supported types: BigDecimal, Integer, Long, Float, Double.");
     }
 
     public static BigDecimal parseToDecimal(String value) {
