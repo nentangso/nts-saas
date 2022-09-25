@@ -1,5 +1,7 @@
 package org.nentangso.core.service.utils;
 
+import com.google.errorprone.annotations.InlineMe;
+
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.stream.Stream;
@@ -16,6 +18,7 @@ public class NtsDateTimeUtils {
     }
 
     @Deprecated(forRemoval = true, since = "1.0.4")
+    @InlineMe(replacement = "NtsDateTimeUtils.greatest(dates)", imports = "org.nentangso.core.service.utils.NtsDateTimeUtils")
     public static LocalDate max(LocalDate... dates) {
         return greatest(dates);
     }
