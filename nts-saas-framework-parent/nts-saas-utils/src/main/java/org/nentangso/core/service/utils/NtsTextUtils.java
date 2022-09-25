@@ -1,6 +1,7 @@
 package org.nentangso.core.service.utils;
 
 import com.google.common.base.CaseFormat;
+import com.google.errorprone.annotations.InlineMe;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
@@ -41,6 +42,7 @@ public class NtsTextUtils {
     }
 
     @Deprecated(forRemoval = true, since = "1.0.4")
+    @InlineMe(replacement = "NtsTextUtils.unaccentVietnamese(input)", imports = "org.nentangso.core.service.utils.NtsTextUtils")
     public static String removeVietnameseChar(String input) {
         return unaccentVietnamese(input);
     }
