@@ -7,6 +7,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
 import static java.util.stream.Collectors.toList;
@@ -15,39 +16,39 @@ import static java.util.stream.Collectors.toList;
 public class FormValidateException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    protected final Map<String, List<String>> fieldErrors;
+    protected final Map<String, List<String>> errors;
 
     public FormValidateException() {
-        this.fieldErrors = new LinkedHashMap<>();
+        this.errors = new LinkedHashMap<>();
     }
 
-    public FormValidateException(Map<String, List<String>> fieldErrors) {
-        super(buildMessage(fieldErrors));
-        this.fieldErrors = fieldErrors;
+    public FormValidateException(Map<String, List<String>> errors) {
+        super(buildMessage(errors));
+        this.errors = errors;
     }
 
     public FormValidateException(String key, String message) {
         super(StringUtils.join(key, ": ", message));
-        this.fieldErrors = Collections.singletonMap(key, Collections.singletonList(message));
+        this.errors = Collections.singletonMap(key, Collections.singletonList(message));
     }
 
     public FormValidateException(BindingResult bindingResult) {
         super(buildMessage(bindingResult));
-        this.fieldErrors = buildFieldErrors(bindingResult);
+        this.errors = buildErrors(bindingResult);
     }
 
-    public Map<String, List<String>> getFieldErrors() {
-        return fieldErrors;
+    public Map<String, List<String>> getErrors() {
+        return errors;
     }
 
     public boolean hasFieldErrors() {
-        return !this.fieldErrors.isEmpty();
+        return !this.errors.isEmpty();
     }
 
     public void addFieldError(String field, String error) {
-        List<String> messages = this.fieldErrors.getOrDefault(field, new ArrayList<>());
+        List<String> messages = this.errors.getOrDefault(field, new ArrayList<>());
         messages.add(error);
-        this.fieldErrors.putIfAbsent(field, messages);
+        this.errors.putIfAbsent(field, messages);
     }
 
     public void addFieldErrors(Map<String, List<String>> fieldErrors) {
@@ -58,9 +59,9 @@ public class FormValidateException extends RuntimeException {
         if (CollectionUtils.isEmpty(fieldErrors)) return;
         fieldErrors.forEach((key, newMessages) -> {
             String fieldName = StringUtils.join(prefix, key);
-            List<String> messages = this.fieldErrors.getOrDefault(fieldName, new ArrayList<>());
+            List<String> messages = this.errors.getOrDefault(fieldName, new ArrayList<>());
             messages.addAll(newMessages);
-            this.fieldErrors.putIfAbsent(fieldName, messages);
+            this.errors.putIfAbsent(fieldName, messages);
         });
     }
 
@@ -82,21 +83,34 @@ public class FormValidateException extends RuntimeException {
             .collect(joining(", "));
     }
 
-    public static Map<String, List<String>> buildFieldErrors(BindingResult bindingResult) {
-        if (bindingResult == null || !bindingResult.hasFieldErrors()) {
+    public static Map<String, List<String>> buildErrors(BindingResult bindingResult) {
+        if (bindingResult == null || !bindingResult.hasErrors()) {
             return Collections.emptyMap();
         }
-        return bindingResult.getFieldErrors().stream()
-            .collect(
-                groupingBy(
-                    FieldError::getField,
-                    collectingAndThen(
-                        toList(),
-                        items -> items.stream()
-                            .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                            .collect(toList())
+        final Map<String, List<String>> errors = new LinkedHashMap<>();
+        if (!CollectionUtils.isEmpty(bindingResult.getGlobalErrors())) {
+            var baseErrors = bindingResult.getGlobalErrors()
+                .stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .collect(Collectors.toList());
+            errors.put("base", baseErrors);
+        }
+        if (!CollectionUtils.isEmpty(bindingResult.getFieldErrors())) {
+            var fieldErrors = bindingResult.getFieldErrors()
+                .stream()
+                .collect(
+                    groupingBy(
+                        FieldError::getField,
+                        collectingAndThen(
+                            toList(),
+                            items -> items.stream()
+                                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                                .collect(toList())
+                        )
                     )
-                )
-            );
+                );
+            errors.putAll(fieldErrors);
+        }
+        return errors;
     }
 }

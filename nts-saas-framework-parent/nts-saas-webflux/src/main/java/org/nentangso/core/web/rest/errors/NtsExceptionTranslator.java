@@ -1,193 +1,196 @@
 package org.nentangso.core.web.rest.errors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.nentangso.core.service.errors.FormValidateException;
 import org.nentangso.core.service.errors.NotFoundException;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.ConversionNotSupportedException;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.core.env.Environment;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageConversionException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.util.CollectionUtils;
+import org.springframework.validation.BindException;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingPathVariableException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
-import org.zalando.problem.*;
-import org.zalando.problem.spring.webflux.advice.ProblemHandling;
-import org.zalando.problem.spring.webflux.advice.security.SecurityAdviceTrait;
-import org.zalando.problem.violations.ConstraintViolationProblem;
-import reactor.core.publisher.Mono;
-import tech.jhipster.config.JHipsterConstants;
-import tech.jhipster.web.util.HeaderUtil;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.net.URI;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Controller advice to translate the server side exceptions to client-friendly json structures.
  * The error response follows RFC7807 - Problem Details for HTTP APIs (https://tools.ietf.org/html/rfc7807).
  */
+@ConditionalOnProperty(
+    prefix = "nts.web.rest.exception-translator",
+    name = "enabled",
+    havingValue = "true"
+)
 @ControllerAdvice
 @ConditionalOnMissingBean(name = "exceptionTranslator")
-public class NtsExceptionTranslator implements ProblemHandling, SecurityAdviceTrait {
+public class NtsExceptionTranslator {
 
-    private static final String ERRORS_KEY = "errors";
-    private static final String MESSAGE_KEY = "message";
-    private static final String PATH_KEY = "path";
-    private static final String VIOLATIONS_KEY = "violations";
+    public static final String MESSAGE_UNAUTHORIZED = "[API] Invalid API key or access token (unrecognized login or wrong password)";
+    public static final String MESSAGE_ACCESS_DENIED = "[API] This action requires merchant approval for the necessary scope.";
+    public static final String MESSAGE_UNPROCESSABLE = "Required parameter missing or invalid";
+    public static final String KEY_BASE = "base";
 
-    @Value("${jhipster.clientApp.name}")
-    private String applicationName;
-
-    private final Environment env;
-
-    public NtsExceptionTranslator(Environment env) {
-        this.env = env;
-    }
-
-    /**
-     * Post-process the Problem payload to add the message key for the front-end if needed.
-     */
-    @Override
-    public Mono<ResponseEntity<Problem>> process(@Nullable ResponseEntity<Problem> entity, ServerWebExchange request) {
-        if (entity == null) {
-            return Mono.empty();
-        }
-        Problem problem = entity.getBody();
-        if (!(problem instanceof ConstraintViolationProblem || problem instanceof DefaultProblem)) {
-            return Mono.just(entity);
-        }
-
-        ProblemBuilder builder = Problem
-            .builder()
-            .withType(Problem.DEFAULT_TYPE.equals(problem.getType()) ? NtsErrorConstants.DEFAULT_TYPE : problem.getType())
-            .withStatus(problem.getStatus())
-            .withTitle(problem.getTitle())
-            .with(PATH_KEY, request.getRequest().getPath().value());
-
-        if (problem instanceof ConstraintViolationProblem) {
-            builder
-                .with(VIOLATIONS_KEY, ((ConstraintViolationProblem) problem).getViolations())
-                .with(MESSAGE_KEY, NtsErrorConstants.ERR_VALIDATION);
-        } else {
-            builder.withCause(((DefaultProblem) problem).getCause()).withDetail(problem.getDetail()).withInstance(problem.getInstance());
-            problem.getParameters().forEach(builder::with);
-            if (!problem.getParameters().containsKey(MESSAGE_KEY) && problem.getStatus() != null) {
-                builder.with(MESSAGE_KEY, "error.http." + problem.getStatus().getStatusCode());
-            }
-        }
-        return Mono.just(new ResponseEntity<>(builder.build(), entity.getHeaders(), entity.getStatusCode()));
-    }
-
-    @Override
-    public Mono<ResponseEntity<Problem>> handleBindingResult(WebExchangeBindException ex, @Nonnull ServerWebExchange request) {
-        Map<String, List<String>> fieldErrors = FormValidateException.buildFieldErrors(ex.getBindingResult());
-        Problem problem = createProblemFromFieldErrors(fieldErrors);
-        return create(ex, problem, request);
-    }
-
-    private Problem createProblemFromFieldErrors(Map<String, List<String>> fieldErrors) {
-        return Problem
-            .builder()
-            .withType(NtsErrorConstants.CONSTRAINT_VIOLATION_TYPE)
-            .withTitle("Method argument not valid")
-            .withStatus(defaultConstraintViolationStatus())
-            .with(MESSAGE_KEY, NtsErrorConstants.ERR_VALIDATION)
-            .with(ERRORS_KEY, fieldErrors)
-            .build();
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleAuthentication(AuthenticationException ex, ServerWebExchange request) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(NtsErrors.singleError(MESSAGE_UNAUTHORIZED));
     }
 
     @ExceptionHandler
-    public Mono<ResponseEntity<Problem>> handleBadRequestAlertException(BadRequestAlertException ex, ServerWebExchange request) {
-        return create(
-            ex,
-            request,
-            HeaderUtil.createFailureAlert(applicationName, true, ex.getEntityName(), ex.getErrorKey(), ex.getMessage())
-        );
+    protected ResponseEntity<Object> handleAccessDenied(AccessDeniedException ex, ServerWebExchange request) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(MESSAGE_ACCESS_DENIED);
     }
 
     @ExceptionHandler
-    public Mono<ResponseEntity<Problem>> handleConcurrencyFailure(ConcurrencyFailureException ex, ServerWebExchange request) {
-        Problem problem = Problem.builder().withStatus(Status.CONFLICT).with(MESSAGE_KEY, NtsErrorConstants.ERR_CONCURRENCY_FAILURE).build();
-        return create(ex, problem, request);
+    protected ResponseEntity<Object> handleResponseStatus(ResponseStatusException ex, ServerWebExchange request) {
+        return createHttpStatus(ex.getStatus());
     }
 
-    @Override
-    public ProblemBuilder prepare(final Throwable throwable, final StatusType status, final URI type) {
-        Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
+    protected ResponseEntity<Object> createHttpStatus(HttpStatus status) {
+        return ResponseEntity.status(status)
+            .body(NtsErrors.singleError(status.getReasonPhrase()));
+    }
 
-        if (activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_PRODUCTION)) {
-            if (throwable instanceof HttpMessageConversionException) {
-                return Problem
-                    .builder()
-                    .withType(type)
-                    .withTitle(status.getReasonPhrase())
-                    .withStatus(status)
-                    .withDetail("Unable to convert http message")
-                    .withCause(
-                        Optional.ofNullable(throwable.getCause()).filter(cause -> isCausalChainsEnabled()).map(this::toProblem).orElse(null)
-                    );
-            }
-            if (throwable instanceof DataAccessException) {
-                return Problem
-                    .builder()
-                    .withType(type)
-                    .withTitle(status.getReasonPhrase())
-                    .withStatus(status)
-                    .withDetail("Failure during data access")
-                    .withCause(
-                        Optional.ofNullable(throwable.getCause()).filter(cause -> isCausalChainsEnabled()).map(this::toProblem).orElse(null)
-                    );
-            }
-            if (containsPackageName(throwable.getMessage())) {
-                return Problem
-                    .builder()
-                    .withType(type)
-                    .withTitle(status.getReasonPhrase())
-                    .withStatus(status)
-                    .withDetail("Unexpected runtime exception")
-                    .withCause(
-                        Optional.ofNullable(throwable.getCause()).filter(cause -> isCausalChainsEnabled()).map(this::toProblem).orElse(null)
-                    );
-            }
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleNotFound(NotFoundException ex, ServerWebExchange request) {
+        return createNotFound();
+    }
+
+    protected ResponseEntity<Object> createNotFound() {
+        return createHttpStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleFormValidation(FormValidateException ex, ServerWebExchange request) {
+        return createUnprocessableEntity(ex.getErrors());
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleBadRequestAlert(BadRequestAlertException ex, ServerWebExchange request) {
+        var errors = Collections.singletonMap(ex.getErrorKey(), Collections.singletonList(ex.getMessage()));
+        return createUnprocessableEntity(errors);
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleConcurrencyFailure(ConcurrencyFailureException ex, ServerWebExchange request) {
+        return createHttpStatus(HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, ServerWebExchange request) {
+        return createHttpStatus(HttpStatus.NOT_ACCEPTABLE);
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex, ServerWebExchange request) {
+        return createHttpStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleHttpMediaTypeNotAcceptable(HttpMediaTypeNotAcceptableException ex, ServerWebExchange request) {
+        return createHttpStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleMissingPathVariable(MissingPathVariableException ex, ServerWebExchange request) {
+        return createNotFound();
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleMissingServletRequestParameter(MissingServletRequestParameterException ex, ServerWebExchange request) {
+        var errors = Collections.singletonMap(ex.getParameterName(), Collections.singletonList(MESSAGE_UNPROCESSABLE));
+        return createUnprocessableEntity(errors);
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleServletRequestBindingException(ServletRequestBindingException ex, ServerWebExchange request) {
+        return createBadRequest();
+    }
+
+    protected ResponseEntity<Object> createBadRequest() {
+        return createHttpStatus(HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleConversionNotSupported(ConversionNotSupportedException ex, ServerWebExchange request) {
+        return createBadRequest();
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, ServerWebExchange request) {
+        return createBadRequest();
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, ServerWebExchange request) {
+        return createBadRequest();
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleHttpMessageNotWritable(HttpMessageNotWritableException ex, ServerWebExchange request) {
+        return createUnprocessableEntity();
+    }
+
+    protected ResponseEntity<Object> createUnprocessableEntity() {
+        var errors = Collections.singletonMap(KEY_BASE, Collections.singletonList(MESSAGE_UNPROCESSABLE));
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+            .body(NtsErrors.mapErrors(errors));
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, ServerWebExchange request) {
+        return createUnprocessableEntity(ex.getBindingResult());
+    }
+
+    protected ResponseEntity<Object> createUnprocessableEntity(BindingResult bindingResult) {
+        Map<String, List<String>> errors = FormValidateException.buildErrors(bindingResult);
+        return createUnprocessableEntity(errors);
+    }
+
+    protected ResponseEntity<Object> createUnprocessableEntity(Map<String, List<String>> errors) {
+        if (CollectionUtils.isEmpty(errors)) {
+            return createUnprocessableEntity();
         }
-
-        return Problem
-            .builder()
-            .withType(type)
-            .withTitle(status.getReasonPhrase())
-            .withStatus(status)
-            .withDetail(throwable.getMessage())
-            .withCause(
-                Optional.ofNullable(throwable.getCause()).filter(cause -> isCausalChainsEnabled()).map(this::toProblem).orElse(null)
-            );
-    }
-
-    private boolean containsPackageName(String message) {
-        // This list is for sure not complete
-        return StringUtils.containsAny(message, "org.", "java.", "net.", "javax.", "com.", "io.", "de.", "org.nentangso.core");
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+            .body(NtsErrors.mapErrors(errors));
     }
 
     @ExceptionHandler
-    public Mono<ResponseEntity<Problem>> handleFormValidateException(FormValidateException ex, ServerWebExchange request) {
-        Problem problem = createProblemFromFieldErrors(ex.getFieldErrors());
-        return create(ex, problem, request);
+    protected ResponseEntity<Object> handleMissingServletRequestPart(MissingServletRequestPartException ex, ServerWebExchange request) {
+        var errors = Collections.singletonMap(ex.getRequestPartName(), Collections.singletonList(ex.getMessage()));
+        return createUnprocessableEntity(errors);
     }
 
     @ExceptionHandler
-    public Mono<ResponseEntity<Problem>> handleNotFoundException(NotFoundException ex, ServerWebExchange request) {
-        ThrowableProblem problem = Problem.builder()
-            .withType(NtsErrorConstants.DEFAULT_TYPE)
-            .withTitle("Not Found")
-            .withStatus(Status.NOT_FOUND)
-            .withDetail("404 NOT_FOUND")
-            .with(MESSAGE_KEY, "error.http.404")
-            .with(ERRORS_KEY, Collections.singletonMap("base", Collections.singletonList("Not Found")))
-            .build();
-        return create(ex, problem, request);
+    protected ResponseEntity<Object> handleBindException(BindException ex, ServerWebExchange request) {
+        return createUnprocessableEntity(ex.getBindingResult());
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException ex, ServerWebExchange webRequest) {
+        return createHttpStatus(HttpStatus.GATEWAY_TIMEOUT);
     }
 }
