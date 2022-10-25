@@ -55,107 +55,115 @@ public class NtsExceptionTranslator {
 
     @ExceptionHandler
     protected ResponseEntity<Object> handleAuthentication(AuthenticationException ex, NativeWebRequest request) {
+        return createUnauthorized(ex, request);
+    }
+
+    protected ResponseEntity<Object> createUnauthorized(Exception ex, NativeWebRequest request) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(NtsErrors.singleError(MESSAGE_UNAUTHORIZED));
     }
 
     @ExceptionHandler
     protected ResponseEntity<Object> handleAccessDenied(AccessDeniedException ex, NativeWebRequest request) {
+        return createForbidden(ex, request);
+    }
+
+    protected ResponseEntity<Object> createForbidden(Exception ex, NativeWebRequest request) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
             .body(MESSAGE_ACCESS_DENIED);
     }
 
     @ExceptionHandler
     protected ResponseEntity<Object> handleResponseStatus(ResponseStatusException ex, NativeWebRequest request) {
-        return createHttpStatus(ex.getStatus());
+        return createHttpStatus(ex.getStatus(), ex, request);
     }
 
-    protected ResponseEntity<Object> createHttpStatus(HttpStatus status) {
+    protected ResponseEntity<Object> createHttpStatus(HttpStatus status, Exception ex, NativeWebRequest request) {
         return ResponseEntity.status(status)
             .body(NtsErrors.singleError(status.getReasonPhrase()));
     }
 
     @ExceptionHandler
     protected ResponseEntity<Object> handleNotFound(NotFoundException ex, NativeWebRequest request) {
-        return createNotFound();
+        return createNotFound(ex, request);
     }
 
-    protected ResponseEntity<Object> createNotFound() {
-        return createHttpStatus(HttpStatus.NOT_FOUND);
+    protected ResponseEntity<Object> createNotFound(Exception ex, NativeWebRequest request) {
+        return createHttpStatus(HttpStatus.NOT_FOUND, ex, request);
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleMissingPathVariable(MissingPathVariableException ex, NativeWebRequest request) {
+        return createNotFound(ex, request);
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, NativeWebRequest request) {
+        return createHttpStatus(HttpStatus.NOT_ACCEPTABLE, ex, request);
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex, NativeWebRequest request) {
+        return createHttpStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE, ex, request);
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleHttpMediaTypeNotAcceptable(HttpMediaTypeNotAcceptableException ex, NativeWebRequest request) {
+        return createHttpStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE, ex, request);
+    }
+
+    @ExceptionHandler
+    protected ResponseEntity<Object> handleConcurrencyFailure(ConcurrencyFailureException ex, NativeWebRequest request) {
+        return createHttpStatus(HttpStatus.CONFLICT, ex, request);
     }
 
     @ExceptionHandler
     protected ResponseEntity<Object> handleFormValidation(FormValidateException ex, NativeWebRequest request) {
-        return createUnprocessableEntity(ex.getErrors());
+        return createUnprocessableEntity(ex.getErrors(), ex, request);
     }
 
     @ExceptionHandler
     protected ResponseEntity<Object> handleBadRequestAlert(BadRequestAlertException ex, NativeWebRequest request) {
         var errors = Collections.singletonMap(ex.getErrorKey(), Collections.singletonList(ex.getMessage()));
-        return createUnprocessableEntity(errors);
-    }
-
-    @ExceptionHandler
-    protected ResponseEntity<Object> handleConcurrencyFailure(ConcurrencyFailureException ex, NativeWebRequest request) {
-        return createHttpStatus(HttpStatus.CONFLICT);
-    }
-
-    @ExceptionHandler
-    protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, NativeWebRequest request) {
-        return createHttpStatus(HttpStatus.NOT_ACCEPTABLE);
-    }
-
-    @ExceptionHandler
-    protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex, NativeWebRequest request) {
-        return createHttpStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
-    }
-
-    @ExceptionHandler
-    protected ResponseEntity<Object> handleHttpMediaTypeNotAcceptable(HttpMediaTypeNotAcceptableException ex, NativeWebRequest request) {
-        return createHttpStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
-    }
-
-    @ExceptionHandler
-    protected ResponseEntity<Object> handleMissingPathVariable(MissingPathVariableException ex, NativeWebRequest request) {
-        return createNotFound();
+        return createUnprocessableEntity(errors, ex, request);
     }
 
     @ExceptionHandler
     protected ResponseEntity<Object> handleMissingServletRequestParameter(MissingServletRequestParameterException ex, NativeWebRequest request) {
         var errors = Collections.singletonMap(ex.getParameterName(), Collections.singletonList(MESSAGE_UNPROCESSABLE));
-        return createUnprocessableEntity(errors);
+        return createUnprocessableEntity(errors, ex, request);
     }
 
     @ExceptionHandler
     protected ResponseEntity<Object> handleServletRequestBindingException(ServletRequestBindingException ex, NativeWebRequest request) {
-        return createBadRequest();
+        return createBadRequest(ex, request);
     }
 
-    protected ResponseEntity<Object> createBadRequest() {
-        return createHttpStatus(HttpStatus.BAD_REQUEST);
+    protected ResponseEntity<Object> createBadRequest(Exception ex, NativeWebRequest request) {
+        return createHttpStatus(HttpStatus.BAD_REQUEST, ex, request);
     }
 
     @ExceptionHandler
     protected ResponseEntity<Object> handleConversionNotSupported(ConversionNotSupportedException ex, NativeWebRequest request) {
-        return createBadRequest();
+        return createBadRequest(ex, request);
     }
 
     @ExceptionHandler
     protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, NativeWebRequest request) {
-        return createBadRequest();
+        return createBadRequest(ex, request);
     }
 
     @ExceptionHandler
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, NativeWebRequest request) {
-        return createBadRequest();
+        return createBadRequest(ex, request);
     }
 
     @ExceptionHandler
     protected ResponseEntity<Object> handleHttpMessageNotWritable(HttpMessageNotWritableException ex, NativeWebRequest request) {
-        return createUnprocessableEntity();
+        return createUnprocessableEntity(ex, request);
     }
 
-    protected ResponseEntity<Object> createUnprocessableEntity() {
+    protected ResponseEntity<Object> createUnprocessableEntity(Exception ex, NativeWebRequest request) {
         var errors = Collections.singletonMap(KEY_BASE, Collections.singletonList(MESSAGE_UNPROCESSABLE));
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
             .body(NtsErrors.mapErrors(errors));
@@ -163,17 +171,17 @@ public class NtsExceptionTranslator {
 
     @ExceptionHandler
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, NativeWebRequest request) {
-        return createUnprocessableEntity(ex.getBindingResult());
+        return createUnprocessableEntity(ex.getBindingResult(), ex, request);
     }
 
-    protected ResponseEntity<Object> createUnprocessableEntity(BindingResult bindingResult) {
+    protected ResponseEntity<Object> createUnprocessableEntity(BindingResult bindingResult, Exception ex, NativeWebRequest request) {
         Map<String, List<String>> errors = FormValidateException.buildErrors(bindingResult);
-        return createUnprocessableEntity(errors);
+        return createUnprocessableEntity(errors, ex, request);
     }
 
-    protected ResponseEntity<Object> createUnprocessableEntity(Map<String, List<String>> errors) {
+    protected ResponseEntity<Object> createUnprocessableEntity(Map<String, List<String>> errors, Exception ex, NativeWebRequest request) {
         if (CollectionUtils.isEmpty(errors)) {
-            return createUnprocessableEntity();
+            return createUnprocessableEntity(ex, request);
         }
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
             .body(NtsErrors.mapErrors(errors));
@@ -182,21 +190,21 @@ public class NtsExceptionTranslator {
     @ExceptionHandler
     protected ResponseEntity<Object> handleMissingServletRequestPart(MissingServletRequestPartException ex, NativeWebRequest request) {
         var errors = Collections.singletonMap(ex.getRequestPartName(), Collections.singletonList(ex.getMessage()));
-        return createUnprocessableEntity(errors);
+        return createUnprocessableEntity(errors, ex, request);
     }
 
     @ExceptionHandler
     protected ResponseEntity<Object> handleBindException(BindException ex, NativeWebRequest request) {
-        return createUnprocessableEntity(ex.getBindingResult());
+        return createUnprocessableEntity(ex.getBindingResult(), ex, request);
     }
 
     @ExceptionHandler
     protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex, NativeWebRequest request) {
-        return createNotFound();
+        return createNotFound(ex, request);
     }
 
     @ExceptionHandler
-    protected ResponseEntity<Object> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException ex, NativeWebRequest webRequest) {
-        return createHttpStatus(HttpStatus.GATEWAY_TIMEOUT);
+    protected ResponseEntity<Object> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException ex, NativeWebRequest request) {
+        return createHttpStatus(HttpStatus.GATEWAY_TIMEOUT, ex, request);
     }
 }
