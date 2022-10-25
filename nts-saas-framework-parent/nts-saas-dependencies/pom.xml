@@ -40,7 +40,7 @@
         <pushy.version>0.15.1</pushy.version>
         <netty.version>4.1.84.Final</netty.version>
         <netty-tcnative.version>2.0.54.Final</netty-tcnative.version>
-        <jackson-databind-nullable.version>0.2.3</jackson-databind-nullable.version>
+        <jackson-databind-nullable.version>0.2.4</jackson-databind-nullable.version>
         <openapi-generator-maven-plugin.version>5.4.0</openapi-generator-maven-plugin.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <problem-spring.version>0.27.0</problem-spring.version>
