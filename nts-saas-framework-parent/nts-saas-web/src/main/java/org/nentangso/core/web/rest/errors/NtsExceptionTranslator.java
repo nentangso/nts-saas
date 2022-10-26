@@ -4,9 +4,11 @@ import org.nentangso.core.service.errors.FormValidateException;
 import org.nentangso.core.service.errors.NotFoundException;
 import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.beans.TypeMismatchException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -29,6 +31,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.util.Collections;
@@ -53,6 +56,9 @@ public class NtsExceptionTranslator {
     public static final String MESSAGE_UNPROCESSABLE = "Required parameter missing or invalid";
     public static final String KEY_BASE = "base";
 
+    @Value("${nts.web.rest.exception-translator.realm-name:API Authentication by nentangso.org}")
+    protected String realmName;
+
     @ExceptionHandler
     protected ResponseEntity<Object> handleAuthentication(AuthenticationException ex, NativeWebRequest request) {
         return createUnauthorized(ex, request);
@@ -60,7 +66,12 @@ public class NtsExceptionTranslator {
 
     protected ResponseEntity<Object> createUnauthorized(Exception ex, NativeWebRequest request) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .header(HttpHeaders.WWW_AUTHENTICATE, generateAuthenticateHeader(ex, request))
             .body(NtsErrors.singleError(MESSAGE_UNAUTHORIZED));
+    }
+
+    protected String generateAuthenticateHeader(Exception ex, NativeWebRequest request) {
+        return String.format("Basic realm=\"%s\"", realmName);
     }
 
     @ExceptionHandler
@@ -70,6 +81,7 @@ public class NtsExceptionTranslator {
 
     protected ResponseEntity<Object> createForbidden(Exception ex, NativeWebRequest request) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .header(HttpHeaders.WWW_AUTHENTICATE, generateAuthenticateHeader(ex, request))
             .body(MESSAGE_ACCESS_DENIED);
     }
 
