@@ -43,7 +43,8 @@ import java.util.Map;
 @ConditionalOnProperty(
     prefix = "nts.web.rest.exception-translator",
     name = "enabled",
-    havingValue = "true"
+    havingValue = "true",
+    matchIfMissing = true
 )
 @ControllerAdvice
 @ConditionalOnMissingBean(name = "exceptionTranslator")
