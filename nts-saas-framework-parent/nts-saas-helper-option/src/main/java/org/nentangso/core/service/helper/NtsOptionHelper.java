@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.nentangso.core.annotation.OptionProperties;
 import org.nentangso.core.domain.OptionEntity;
 import org.nentangso.core.repository.OptionRepository;
-import org.nentangso.core.service.errors.FormValidateException;
+import org.nentangso.core.service.errors.FormValidationException;
 import org.nentangso.core.service.utils.NtsTextUtils;
 import org.nentangso.core.service.utils.NtsValidationUtils;
 import org.slf4j.Logger;
@@ -48,7 +48,7 @@ public class NtsOptionHelper {
     @Transactional
     public void writeRawString(String optionKey, String optionValue) {
         if (StringUtils.isBlank(optionKey)) {
-            throw new FormValidateException("option_key", "Option key is invalid");
+            throw new FormValidationException("option_key", "Option key is invalid");
         }
         OptionEntity option = optionRepository.findOneByOptionKey(optionKey)
             .orElseGet(() -> new OptionEntity(optionKey, optionValue));
