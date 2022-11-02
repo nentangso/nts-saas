@@ -1,7 +1,7 @@
 package org.nentangso.core.service.utils;
 
 import org.apache.commons.lang3.StringUtils;
-import org.nentangso.core.service.errors.FormValidateException;
+import org.nentangso.core.service.errors.FormValidationException;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -20,7 +20,7 @@ public class NtsValidationUtils {
     public static <T> void validateObject(T entity, String prefix) {
         Map<String, List<String>> errors = validateObjectAndGetErrors(entity, prefix);
         if (!errors.isEmpty()) {
-            throw new FormValidateException(errors);
+            throw new FormValidationException(errors);
         }
     }
 

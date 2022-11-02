@@ -13,26 +13,26 @@ import static java.util.stream.Collectors.*;
 import static java.util.stream.Collectors.toList;
 
 @SuppressWarnings("java:S110") // Inheritance tree of classes should not be too deep
-public class FormValidateException extends RuntimeException {
+public class FormValidationException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     protected final Map<String, List<String>> errors;
 
-    public FormValidateException() {
+    public FormValidationException() {
         this.errors = new LinkedHashMap<>();
     }
 
-    public FormValidateException(Map<String, List<String>> errors) {
+    public FormValidationException(Map<String, List<String>> errors) {
         super(buildMessage(errors));
         this.errors = errors;
     }
 
-    public FormValidateException(String key, String message) {
+    public FormValidationException(String key, String message) {
         super(StringUtils.join(key, ": ", message));
         this.errors = Collections.singletonMap(key, Collections.singletonList(message));
     }
 
-    public FormValidateException(BindingResult bindingResult) {
+    public FormValidationException(BindingResult bindingResult) {
         super(buildMessage(bindingResult));
         this.errors = buildErrors(bindingResult);
     }
