@@ -58,7 +58,7 @@
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <maven-release-plugin.version>3.0.0-M6</maven-release-plugin.version>
+        <maven-release-plugin.version>3.0.0-M7</maven-release-plugin.version>
         <versions-maven-plugin.version>2.13.0</versions-maven-plugin.version>
     </properties>
 
