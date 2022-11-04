@@ -1,5 +1,6 @@
 package org.nentangso.core.web.rest.errors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.nentangso.core.service.errors.FormValidationException;
 import org.nentangso.core.service.errors.NotFoundException;
 import org.slf4j.Logger;
@@ -35,7 +36,7 @@ import java.util.Map;
 
 /**
  * Controller advice to translate the server side exceptions to client-friendly json structures.
- * The error response follows RFC7807 - Problem Details for HTTP APIs (https://tools.ietf.org/html/rfc7807).
+ * The error response follows RFC7807 - Problem Details for HTTP APIs (<a href="https://tools.ietf.org/html/rfc7807">RFC7807</a>).
  */
 @ConditionalOnProperty(
     prefix = "nts.web.rest.exception-translator",
@@ -47,12 +48,6 @@ import java.util.Map;
 @ConditionalOnMissingBean(name = "exceptionTranslator")
 public class NtsExceptionTranslator extends ResponseEntityExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(NtsExceptionTranslator.class);
-
-    public static final String KEY_ERRORS = "errors";
-    public static final String KEY_BASE = "base";
-    public static final String MESSAGE_UNAUTHORIZED = "[API] Invalid API key or access token (unrecognized login or wrong password)";
-    public static final String MESSAGE_ACCESS_DENIED = "[API] This action requires merchant approval for the necessary scope.";
-    public static final String MESSAGE_UNPROCESSABLE = "Required parameter missing or invalid";
 
     @Value("${nts.web.rest.exception-translator.realm-name:API Authentication by nentangso.org}")
     protected String realmName;
@@ -116,7 +111,7 @@ public class NtsExceptionTranslator extends ResponseEntityExceptionHandler {
 
     private ResponseEntity<Object> handleResponseStatus(ResponseStatusException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
 
-        return handleExceptionInternal(ex, null, headers, status, request);
+        return handleExceptionInternal(ex, null, headers, ex.getStatus(), request);
     }
 
     private ResponseEntity<Object> handleConcurrencyFailure(ConcurrencyFailureException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
@@ -188,22 +183,23 @@ public class NtsExceptionTranslator extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(Exception ex, @Nullable Object body, HttpHeaders headers, HttpStatus status, WebRequest request) {
         if (HttpStatus.UNAUTHORIZED.equals(status) && body == null) {
-            body = Collections.singletonMap(KEY_ERRORS, MESSAGE_UNAUTHORIZED);
+            body = Collections.singletonMap(NtsErrorConstants.KEY_ERRORS, NtsErrorConstants.MESSAGE_UNAUTHORIZED);
         } else if (HttpStatus.FORBIDDEN.equals(status) && body == null) {
-            body = Collections.singletonMap(KEY_ERRORS, MESSAGE_ACCESS_DENIED);
+            body = Collections.singletonMap(NtsErrorConstants.KEY_ERRORS, NtsErrorConstants.MESSAGE_ACCESS_DENIED);
         } else if (HttpStatus.UNPROCESSABLE_ENTITY.equals(status) && body == null) {
             Map<String, List<String>> errors = buildUnprocessableErrors(ex);
-            body = Collections.singletonMap(KEY_ERRORS, errors);
+            body = Collections.singletonMap(NtsErrorConstants.KEY_ERRORS, errors);
         } else if (status.is4xxClientError() && body == null) {
-            body = Collections.singletonMap(KEY_ERRORS, status.getReasonPhrase());
+            body = Collections.singletonMap(NtsErrorConstants.KEY_ERRORS, status.getReasonPhrase());
         } else if (status.is5xxServerError() && body == null) {
-            body = Collections.singletonMap(KEY_ERRORS, ex.getMessage());
+            String errors = StringUtils.defaultIfBlank(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
+            body = Collections.singletonMap(NtsErrorConstants.KEY_ERRORS, errors);
         }
         return super.handleExceptionInternal(ex, body, headers, status, request);
     }
 
     protected Map<String, List<String>> buildUnprocessableErrors(Exception ex) {
-        Map<String, List<String>> errors = Collections.singletonMap(KEY_BASE, Collections.singletonList(MESSAGE_UNPROCESSABLE));
+        Map<String, List<String>> errors = Collections.singletonMap(NtsErrorConstants.KEY_BASE, Collections.singletonList(NtsErrorConstants.MESSAGE_UNPROCESSABLE));
         if (ex instanceof FormValidationException && !((FormValidationException) ex).getErrors().isEmpty()) {
             errors = ((FormValidationException) ex).getErrors();
         } else if (ex instanceof BadRequestAlertException) {

@@ -12,6 +12,11 @@ public final class NtsErrorConstants {
     public static final URI INVALID_PASSWORD_TYPE = URI.create(PROBLEM_BASE_URL + "/invalid-password");
     public static final URI EMAIL_ALREADY_USED_TYPE = URI.create(PROBLEM_BASE_URL + "/email-already-used");
     public static final URI LOGIN_ALREADY_USED_TYPE = URI.create(PROBLEM_BASE_URL + "/login-already-used");
+    public static final String KEY_ERRORS = "errors";
+    public static final String KEY_BASE = "base";
+    public static final String MESSAGE_UNAUTHORIZED = "[API] Invalid API key or access token (unrecognized login or wrong password)";
+    public static final String MESSAGE_ACCESS_DENIED = "[API] This action requires merchant approval for the necessary scope.";
+    public static final String MESSAGE_UNPROCESSABLE = "Required parameter missing or invalid";
 
     private NtsErrorConstants() {
     }
