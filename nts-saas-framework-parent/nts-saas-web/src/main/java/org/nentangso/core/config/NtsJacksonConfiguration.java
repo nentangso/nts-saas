@@ -3,9 +3,11 @@ package org.nentangso.core.config;
 import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.zalando.problem.jackson.ProblemModule;
 import org.zalando.problem.violations.ConstraintViolationProblemModule;
 
@@ -32,6 +34,7 @@ public class NtsJacksonConfiguration {
      * Support for Hibernate types in Jackson.
      */
     @Bean
+    @ConditionalOnClass(name = "org.hibernate.jpa.HibernateEntityManager")
     public Hibernate5Module hibernate5Module() {
         return new Hibernate5Module();
     }
