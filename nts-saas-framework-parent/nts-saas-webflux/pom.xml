@@ -89,6 +89,7 @@
         <dependency>
             <groupId>org.zalando</groupId>
             <artifactId>problem-spring-webflux</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.nentangso</groupId>
