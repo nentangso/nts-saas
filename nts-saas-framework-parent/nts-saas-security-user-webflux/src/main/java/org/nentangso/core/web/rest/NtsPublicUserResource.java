@@ -14,7 +14,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import tech.jhipster.web.util.PaginationUtil;
-import org.nentangso.core.service.UserService;
+import org.nentangso.core.service.NtsUserService;
 import org.nentangso.core.service.dto.UserDTO;
 
 @RestController
@@ -24,9 +24,9 @@ public class NtsPublicUserResource {
 
     private final Logger log = LoggerFactory.getLogger(NtsPublicUserResource.class);
 
-    private final UserService userService;
+    private final NtsUserService userService;
 
-    public NtsPublicUserResource(UserService userService) {
+    public NtsPublicUserResource(NtsUserService userService) {
         this.userService = userService;
     }
 
