@@ -1,11 +1,12 @@
 package org.nentangso.core.web.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.nentangso.core.service.dto.MetafieldDTO;
+import org.nentangso.core.domain.NtsMetafieldEntity;
+import org.nentangso.core.service.dto.NtsMetafieldDTO;
 import org.nentangso.core.service.errors.NotFoundException;
 import org.nentangso.core.service.helper.NtsJsonHelper;
 import org.nentangso.core.service.helper.NtsMetafieldHelper;
-import org.nentangso.core.service.mapper.MetafieldMapper;
+import org.nentangso.core.service.mapper.NtsMetafieldMapper;
 import org.nentangso.core.web.rest.utils.NtsRequestUtils;
 import org.nentangso.core.web.rest.vm.MetafieldInput;
 import org.slf4j.Logger;
@@ -22,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * REST controller for managing {@link org.nentangso.core.domain.MetafieldEntity}.
+ * REST controller for managing {@link NtsMetafieldEntity}.
  */
 public abstract class AbstractMetafieldResource {
     private final Logger log = LoggerFactory.getLogger(AbstractMetafieldResource.class);
@@ -31,9 +32,9 @@ public abstract class AbstractMetafieldResource {
 
     protected final NtsJsonHelper jsonHelper;
     protected final NtsMetafieldHelper metafieldHelper;
-    protected final MetafieldMapper metafieldMapper;
+    protected final NtsMetafieldMapper metafieldMapper;
 
-    protected AbstractMetafieldResource(NtsJsonHelper jsonHelper, NtsMetafieldHelper metafieldHelper, MetafieldMapper metafieldMapper) {
+    protected AbstractMetafieldResource(NtsJsonHelper jsonHelper, NtsMetafieldHelper metafieldHelper, NtsMetafieldMapper metafieldMapper) {
         this.jsonHelper = jsonHelper;
         this.metafieldHelper = metafieldHelper;
         this.metafieldMapper = metafieldMapper;
@@ -55,13 +56,13 @@ public abstract class AbstractMetafieldResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new metafieldDTO, or with status {@code 400 (Bad Request)}.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    protected ResponseEntity<MetafieldDTO> createMetafield(long ownerId, MetafieldInput metafield) throws URISyntaxException {
+    protected ResponseEntity<NtsMetafieldDTO> createMetafield(long ownerId, MetafieldInput metafield) throws URISyntaxException {
         log.debug("REST request to save metafield : {}", metafield);
         if (!existsByOwnerId(ownerId)) {
             throw new NotFoundException();
         }
-        MetafieldDTO metafieldDTO = metafieldMapper.toDto(metafield, getOwnerResource(), ownerId);
-        MetafieldDTO result = metafieldHelper.save(metafieldDTO);
+        NtsMetafieldDTO metafieldDTO = metafieldMapper.toDto(metafield, getOwnerResource(), ownerId);
+        NtsMetafieldDTO result = metafieldHelper.save(metafieldDTO);
         return ResponseEntity
             .created(buildCreatedUri(ownerId, result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(getApplicationName(), true, ENTITY_NAME, result.getId().toString()))
@@ -80,19 +81,19 @@ public abstract class AbstractMetafieldResource {
      * or with status {@code 500 (Internal Server Error)} if the metafield couldn't be updated.
      * @throws IOException if the Location URI syntax is incorrect.
      */
-    protected ResponseEntity<MetafieldDTO> updateMetafield(long ownerId, long id, MetafieldInput metafield, HttpServletRequest request) throws IOException {
+    protected ResponseEntity<NtsMetafieldDTO> updateMetafield(long ownerId, long id, MetafieldInput metafield, HttpServletRequest request) throws IOException {
         log.debug("REST request to update metafield : {}", metafield);
         if (!existsByOwnerId(ownerId)) {
             throw new NotFoundException();
         }
-        MetafieldDTO.Builder builder = metafieldHelper.findOne(getOwnerResource(), ownerId, id)
-            .map(MetafieldDTO::newBuilder)
+        NtsMetafieldDTO.Builder builder = metafieldHelper.findOne(getOwnerResource(), ownerId, id)
+            .map(NtsMetafieldDTO::newBuilder)
             .orElseThrow(NotFoundException::new);
 
         String body = NtsRequestUtils.getBody(request);
         JsonNode node = jsonHelper.getJsonNode(body, null);
 
-        MetafieldDTO metafieldDTO = builder
+        NtsMetafieldDTO metafieldDTO = builder
             .namespaceIf(jsonHelper.existField(node, "namespace"), metafield::getNamespace)
             .keyIf(jsonHelper.existField(node, "key"), metafield::getKey)
             .valueIf(jsonHelper.existField(node, "value"), metafield::getValue)
@@ -100,7 +101,7 @@ public abstract class AbstractMetafieldResource {
             .descriptionIf(jsonHelper.existField(node, "description"), metafield::getDescription)
             .build();
 
-        MetafieldDTO result = metafieldHelper.save(metafieldDTO);
+        NtsMetafieldDTO result = metafieldHelper.save(metafieldDTO);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(getApplicationName(), true, ENTITY_NAME, String.valueOf(id)))
@@ -113,12 +114,12 @@ public abstract class AbstractMetafieldResource {
      * @param ownerId the owner id
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of metafields in body.
      */
-    protected ResponseEntity<List<MetafieldDTO>> getAllMetafields(long ownerId) {
+    protected ResponseEntity<List<NtsMetafieldDTO>> getAllMetafields(long ownerId) {
         log.debug("REST request to get metafields");
         if (!existsByOwnerId(ownerId)) {
             throw new NotFoundException();
         }
-        List<MetafieldDTO> metafields = metafieldHelper.findAllByOwner(getOwnerResource(), ownerId);
+        List<NtsMetafieldDTO> metafields = metafieldHelper.findAllByOwner(getOwnerResource(), ownerId);
         return ResponseEntity.ok(metafields);
     }
 
@@ -141,9 +142,9 @@ public abstract class AbstractMetafieldResource {
      * @param id      the id of the metafield to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the metafield, or with status {@code 404 (Not Found)}.
      */
-    protected ResponseEntity<MetafieldDTO> getMetafield(long ownerId, long id) {
+    protected ResponseEntity<NtsMetafieldDTO> getMetafield(long ownerId, long id) {
         log.debug("REST request to get metafield : {}", id);
-        Optional<MetafieldDTO> metafieldDTO = metafieldHelper.findOne(getOwnerResource(), ownerId, id);
+        Optional<NtsMetafieldDTO> metafieldDTO = metafieldHelper.findOne(getOwnerResource(), ownerId, id);
         return ResponseUtil.wrapOrNotFound(metafieldDTO);
     }
 

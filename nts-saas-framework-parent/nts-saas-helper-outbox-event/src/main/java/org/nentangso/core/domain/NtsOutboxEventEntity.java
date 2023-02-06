@@ -19,7 +19,7 @@ import java.time.Instant;
 )
 @Entity
 @Table(name = "nts_outbox_events")
-public class OutboxEventEntity implements Serializable {
+public class NtsOutboxEventEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -167,10 +167,10 @@ public class OutboxEventEntity implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof OutboxEventEntity)) {
+        if (!(o instanceof NtsOutboxEventEntity)) {
             return false;
         }
-        return id != null && id.equals(((OutboxEventEntity) o).id);
+        return id != null && id.equals(((NtsOutboxEventEntity) o).id);
     }
 
     @Override

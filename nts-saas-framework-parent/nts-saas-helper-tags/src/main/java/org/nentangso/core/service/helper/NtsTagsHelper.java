@@ -1,8 +1,8 @@
 package org.nentangso.core.service.helper;
 
 import org.apache.commons.lang3.StringUtils;
-import org.nentangso.core.domain.TagsEntity;
-import org.nentangso.core.repository.TagsRepository;
+import org.nentangso.core.domain.NtsTagsEntity;
+import org.nentangso.core.repository.NtsTagsRepository;
 import org.nentangso.core.service.errors.NotFoundException;
 import org.nentangso.core.service.utils.NtsTextUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -22,9 +22,9 @@ import java.util.stream.Collectors;
 )
 @Component
 public class NtsTagsHelper {
-    private final TagsRepository tagsRepository;
+    private final NtsTagsRepository tagsRepository;
 
-    public NtsTagsHelper(TagsRepository tagsRepository) {
+    public NtsTagsHelper(NtsTagsRepository tagsRepository) {
         this.tagsRepository = tagsRepository;
     }
 
@@ -33,7 +33,7 @@ public class NtsTagsHelper {
             return Collections.emptySet();
         }
         return tagsRepository.findById(id)
-            .map(TagsEntity::getTags)
+            .map(NtsTagsEntity::getTags)
             .map(NtsTextUtils::splitTags)
             .orElseGet(Collections::emptySet);
     }
@@ -42,7 +42,7 @@ public class NtsTagsHelper {
         if (id == null || id <= 0) {
             return Optional.empty();
         }
-        return tagsRepository.findById(id).map(TagsEntity::getTags);
+        return tagsRepository.findById(id).map(NtsTagsEntity::getTags);
     }
 
     public Map<Long, Set<String>> findAllTagsById(Collection<@NotNull @Min(1) Long> ids) {
@@ -50,7 +50,7 @@ public class NtsTagsHelper {
             return Collections.emptyMap();
         }
         return tagsRepository.findAllById(ids).stream()
-            .collect(Collectors.toMap(TagsEntity::getId, v -> NtsTextUtils.splitTags(v.getTags())));
+            .collect(Collectors.toMap(NtsTagsEntity::getId, v -> NtsTextUtils.splitTags(v.getTags())));
     }
 
     public Map<Long, String> findAllJoinedTagsById(Collection<@NotNull @Min(1) Long> ids) {
@@ -58,24 +58,24 @@ public class NtsTagsHelper {
             return Collections.emptyMap();
         }
         return tagsRepository.findAllById(ids).stream()
-            .collect(Collectors.toMap(TagsEntity::getId, TagsEntity::getTags));
+            .collect(Collectors.toMap(NtsTagsEntity::getId, NtsTagsEntity::getTags));
     }
 
     @Transactional
-    public Optional<TagsEntity> save(Set<String> tags, Long id) {
+    public Optional<NtsTagsEntity> save(Set<String> tags, Long id) {
         String joinedTags = NtsTextUtils.joinTags(tags);
         return save(joinedTags, id);
     }
 
     @Transactional
-    public Optional<TagsEntity> save(String joinedTags, Long id) {
+    public Optional<NtsTagsEntity> save(String joinedTags, Long id) {
         if (StringUtils.isEmpty(joinedTags)) {
             if (Objects.nonNull(id)) {
                 tagsRepository.deleteById(id);
             }
             return Optional.empty();
         }
-        TagsEntity tagsEntity = new TagsEntity();
+        NtsTagsEntity tagsEntity = new NtsTagsEntity();
         if (Objects.nonNull(id)) {
             tagsEntity = tagsRepository.findById(id).orElseThrow(NotFoundException::new);
             if (StringUtils.equals(tagsEntity.getTags(), joinedTags)) {
@@ -87,7 +87,7 @@ public class NtsTagsHelper {
     }
 
     @Transactional
-    public Optional<TagsEntity> save(String joinedTags, TagsEntity tagsEntity) {
+    public Optional<NtsTagsEntity> save(String joinedTags, NtsTagsEntity tagsEntity) {
         if (StringUtils.isEmpty(joinedTags)) {
             if (Objects.nonNull(tagsEntity) && Objects.nonNull(tagsEntity.getId())) {
                 tagsRepository.deleteById(tagsEntity.getId());
@@ -95,7 +95,7 @@ public class NtsTagsHelper {
             return Optional.empty();
         }
         if (Objects.isNull(tagsEntity) || Objects.isNull(tagsEntity.getId())) {
-            tagsEntity = new TagsEntity();
+            tagsEntity = new NtsTagsEntity();
         }
         if (StringUtils.equals(tagsEntity.getTags(), joinedTags)) {
             return Optional.of(tagsEntity);

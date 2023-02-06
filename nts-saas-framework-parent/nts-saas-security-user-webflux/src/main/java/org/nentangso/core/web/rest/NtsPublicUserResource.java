@@ -15,7 +15,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import tech.jhipster.web.util.PaginationUtil;
 import org.nentangso.core.service.NtsUserService;
-import org.nentangso.core.service.dto.UserDTO;
+import org.nentangso.core.service.dto.NtsUserDTO;
 
 @RestController
 @RequestMapping("/api")
@@ -38,7 +38,7 @@ public class NtsPublicUserResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all users.
      */
     @GetMapping("/users")
-    public Mono<ResponseEntity<Flux<UserDTO>>> getAllPublicUsers(
+    public Mono<ResponseEntity<Flux<NtsUserDTO>>> getAllPublicUsers(
         ServerHttpRequest request,
         @org.springdoc.api.annotations.ParameterObject Pageable pageable
     ) {

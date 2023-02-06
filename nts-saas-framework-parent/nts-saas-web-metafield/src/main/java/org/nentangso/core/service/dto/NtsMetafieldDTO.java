@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.function.Supplier;
 
-public class MetafieldDTO extends AbstractAuditingDTO implements Serializable {
+public class NtsMetafieldDTO extends AbstractAuditingDTO implements Serializable {
     /**
      * The unique ID of the metafield.
      */
@@ -71,7 +71,7 @@ public class MetafieldDTO extends AbstractAuditingDTO implements Serializable {
     @Size(max = 255)
     private final String description;
 
-    public MetafieldDTO(Long id, String ownerResource, Long ownerId, String namespace, String key, String value, String type, String description) {
+    public NtsMetafieldDTO(Long id, String ownerResource, Long ownerId, String namespace, String key, String value, String type, String description) {
         this.id = id;
         this.ownerResource = ownerResource;
         this.ownerId = ownerId;
@@ -84,7 +84,7 @@ public class MetafieldDTO extends AbstractAuditingDTO implements Serializable {
         validateObject(null);
     }
 
-    public MetafieldDTO(Builder builder) {
+    public NtsMetafieldDTO(Builder builder) {
         this.id = builder.id;
         this.ownerResource = builder.ownerResource;
         this.ownerId = builder.ownerId;
@@ -107,7 +107,7 @@ public class MetafieldDTO extends AbstractAuditingDTO implements Serializable {
         NtsValidationUtils.validateObject(this, prefix);
     }
 
-    public static Builder newBuilder(MetafieldDTO dto) {
+    public static Builder newBuilder(NtsMetafieldDTO dto) {
         return new Builder(dto);
     }
 
@@ -180,7 +180,7 @@ public class MetafieldDTO extends AbstractAuditingDTO implements Serializable {
         public Builder() {
         }
 
-        public Builder(MetafieldDTO dto) {
+        public Builder(NtsMetafieldDTO dto) {
             this.id = dto.getId();
             this.ownerResource = dto.getOwnerResource();
             this.ownerId = dto.getOwnerId();
@@ -295,8 +295,8 @@ public class MetafieldDTO extends AbstractAuditingDTO implements Serializable {
             return this;
         }
 
-        public MetafieldDTO build() {
-            return new MetafieldDTO(this);
+        public NtsMetafieldDTO build() {
+            return new NtsMetafieldDTO(this);
         }
     }
 }

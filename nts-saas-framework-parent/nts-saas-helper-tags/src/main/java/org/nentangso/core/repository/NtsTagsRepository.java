@@ -1,6 +1,6 @@
 package org.nentangso.core.repository;
 
-import org.nentangso.core.domain.TagsEntity;
+import org.nentangso.core.domain.NtsTagsEntity;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,31 +15,31 @@ import java.util.List;
     havingValue = "true"
 )
 @Repository
-public interface TagsRepository extends CrudRepository<TagsEntity, Long> {
+public interface NtsTagsRepository extends CrudRepository<NtsTagsEntity, Long> {
     @Override
     @Modifying
-    @Query("update TagsEntity e set e.deleted = true where e.id = ?1")
+    @Query("update NtsTagsEntity e set e.deleted = true where e.id = ?1")
     void deleteById(Long id);
 
     @Override
     @Modifying
-    @Query("update TagsEntity e set e.deleted = true where e = ?1")
-    void delete(TagsEntity entity);
+    @Query("update NtsTagsEntity e set e.deleted = true where e = ?1")
+    void delete(NtsTagsEntity entity);
 
     @Override
     @Modifying
-    @Query("update TagsEntity e set e.deleted = true where e.id in ?1")
+    @Query("update NtsTagsEntity e set e.deleted = true where e.id in ?1")
     void deleteAllById(Iterable<? extends Long> ids);
 
     @Override
     @Modifying
-    @Query("update TagsEntity e set e.deleted = true where e in ?1")
-    void deleteAll(Iterable<? extends TagsEntity> entities);
+    @Query("update NtsTagsEntity e set e.deleted = true where e in ?1")
+    void deleteAll(Iterable<? extends NtsTagsEntity> entities);
 
     @Override
     @Modifying
-    @Query("update TagsEntity e set e.deleted = true")
+    @Query("update NtsTagsEntity e set e.deleted = true")
     void deleteAll();
 
-    List<TagsEntity> findAllById(Iterable<Long> ids);
+    List<NtsTagsEntity> findAllById(Iterable<Long> ids);
 }

@@ -2,8 +2,8 @@ package org.nentangso.core.service.helper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.nentangso.core.config.NtsConstants;
-import org.nentangso.core.domain.OutboxEventEntity;
-import org.nentangso.core.repository.OutboxEventRepository;
+import org.nentangso.core.domain.NtsOutboxEventEntity;
+import org.nentangso.core.repository.NtsOutboxEventRepository;
 import org.nentangso.core.security.SecurityUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
@@ -20,10 +20,10 @@ import java.util.UUID;
 )
 @Service
 public class NtsOutboxEventHelper {
-    private final OutboxEventRepository outboxEventRepository;
+    private final NtsOutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
 
-    public NtsOutboxEventHelper(OutboxEventRepository outboxEventRepository, ObjectMapper objectMapper) {
+    public NtsOutboxEventHelper(NtsOutboxEventRepository outboxEventRepository, ObjectMapper objectMapper) {
         this.outboxEventRepository = outboxEventRepository;
         this.objectMapper = objectMapper;
     }
@@ -49,7 +49,7 @@ public class NtsOutboxEventHelper {
 
     @Transactional
     public void queue(String aggregateType, String aggregateId, String eventType, Object payload, String actor, int aggregateVersion, int businessVersion) throws IOException {
-        OutboxEventEntity outboxEvent = new OutboxEventEntity();
+        NtsOutboxEventEntity outboxEvent = new NtsOutboxEventEntity();
         String payloadJson = payload instanceof String ? (String) payload : objectMapper.writeValueAsString(payload);
         outboxEvent.setAggregateType(aggregateType);
         outboxEvent.setAggregateId(aggregateId);

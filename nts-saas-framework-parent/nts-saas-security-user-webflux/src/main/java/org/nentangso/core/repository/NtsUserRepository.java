@@ -1,24 +1,17 @@
 package org.nentangso.core.repository;
 
-import static org.springframework.data.relational.core.query.Criteria.where;
-import static org.springframework.data.relational.core.query.Query.query;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.beanutils.BeanComparator;
-import org.nentangso.core.domain.Authority;
-import org.nentangso.core.domain.UserEntity;
+import org.nentangso.core.domain.NtsAuthority;
+import org.nentangso.core.domain.NtsUserEntity;
 import org.springframework.data.domain.*;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.r2dbc.convert.R2dbcConverter;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
-import org.springframework.data.relational.core.sql.Column;
-import org.springframework.data.relational.core.sql.Expression;
-import org.springframework.data.relational.core.sql.Table;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -27,15 +20,15 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 /**
- * Spring Data R2DBC repository for the {@link UserEntity} entity.
+ * Spring Data R2DBC repository for the {@link NtsUserEntity} entity.
  */
 @Repository
-public interface UserRepository extends R2dbcRepository<UserEntity, String>, UserRepositoryInternal {
-    Mono<UserEntity> findOneByLogin(String login);
+public interface NtsUserRepository extends R2dbcRepository<NtsUserEntity, String>, NtsUserRepositoryInternal {
+    Mono<NtsUserEntity> findOneByLogin(String login);
 
-    Flux<UserEntity> findAllByIdNotNull(Pageable pageable);
+    Flux<NtsUserEntity> findAllByIdNotNull(Pageable pageable);
 
-    Flux<UserEntity> findAllByIdNotNullAndActivatedIsTrue(Pageable pageable);
+    Flux<NtsUserEntity> findAllByIdNotNullAndActivatedIsTrue(Pageable pageable);
 
     Mono<Long> count();
 
@@ -49,33 +42,33 @@ public interface UserRepository extends R2dbcRepository<UserEntity, String>, Use
     Mono<Void> deleteUserAuthorities(String userId);
 }
 
-interface UserRepositoryInternal {
-    Mono<UserEntity> findOneWithAuthoritiesByLogin(String login);
+interface NtsUserRepositoryInternal {
+    Mono<NtsUserEntity> findOneWithAuthoritiesByLogin(String login);
 
-    Mono<UserEntity> create(UserEntity user);
+    Mono<NtsUserEntity> create(NtsUserEntity user);
 
-    Flux<UserEntity> findAllWithAuthorities(Pageable pageable);
+    Flux<NtsUserEntity> findAllWithAuthorities(Pageable pageable);
 }
 
-class UserRepositoryInternalImpl implements UserRepositoryInternal {
+class NtsUserRepositoryInternalImpl implements NtsUserRepositoryInternal {
 
     private final DatabaseClient db;
     private final R2dbcEntityTemplate r2dbcEntityTemplate;
     private final R2dbcConverter r2dbcConverter;
 
-    public UserRepositoryInternalImpl(DatabaseClient db, R2dbcEntityTemplate r2dbcEntityTemplate, R2dbcConverter r2dbcConverter) {
+    public NtsUserRepositoryInternalImpl(DatabaseClient db, R2dbcEntityTemplate r2dbcEntityTemplate, R2dbcConverter r2dbcConverter) {
         this.db = db;
         this.r2dbcEntityTemplate = r2dbcEntityTemplate;
         this.r2dbcConverter = r2dbcConverter;
     }
 
     @Override
-    public Mono<UserEntity> findOneWithAuthoritiesByLogin(String login) {
+    public Mono<NtsUserEntity> findOneWithAuthoritiesByLogin(String login) {
         return findOneWithAuthoritiesBy("login", login);
     }
 
     @Override
-    public Flux<UserEntity> findAllWithAuthorities(Pageable pageable) {
+    public Flux<NtsUserEntity> findAllWithAuthorities(Pageable pageable) {
         String property = pageable.getSort().stream().map(Sort.Order::getProperty).findFirst().orElse("id");
         String direction = String.valueOf(
             pageable.getSort().stream().map(Sort.Order::getDirection).findFirst().orElse(Sort.DEFAULT_DIRECTION)
@@ -87,7 +80,7 @@ class UserRepositoryInternalImpl implements UserRepositoryInternal {
             .sql("SELECT * FROM nts_user u LEFT JOIN nts_user_authority ua ON u.id=ua.user_id")
             .map((row, metadata) ->
                 Tuples.of(
-                    r2dbcConverter.read(UserEntity.class, row, metadata),
+                    r2dbcConverter.read(NtsUserEntity.class, row, metadata),
                     Optional.ofNullable(row.get("authority_name", String.class))
                 )
             )
@@ -104,17 +97,17 @@ class UserRepositoryInternalImpl implements UserRepositoryInternal {
     }
 
     @Override
-    public Mono<UserEntity> create(UserEntity user) {
-        return r2dbcEntityTemplate.insert(UserEntity.class).using(user).defaultIfEmpty(user);
+    public Mono<NtsUserEntity> create(NtsUserEntity user) {
+        return r2dbcEntityTemplate.insert(NtsUserEntity.class).using(user).defaultIfEmpty(user);
     }
 
-    private Mono<UserEntity> findOneWithAuthoritiesBy(String fieldName, Object fieldValue) {
+    private Mono<NtsUserEntity> findOneWithAuthoritiesBy(String fieldName, Object fieldValue) {
         return db
             .sql("SELECT * FROM nts_user u LEFT JOIN nts_user_authority ua ON u.id=ua.user_id WHERE u." + fieldName + " = :" + fieldName)
             .bind(fieldName, fieldValue)
             .map((row, metadata) ->
                 Tuples.of(
-                    r2dbcConverter.read(UserEntity.class, row, metadata),
+                    r2dbcConverter.read(NtsUserEntity.class, row, metadata),
                     Optional.ofNullable(row.get("authority_name", String.class))
                 )
             )
@@ -124,13 +117,13 @@ class UserRepositoryInternalImpl implements UserRepositoryInternal {
             .map(l -> updateUserWithAuthorities(l.get(0).getT1(), l));
     }
 
-    private UserEntity updateUserWithAuthorities(UserEntity user, List<Tuple2<UserEntity, Optional<String>>> tuples) {
+    private NtsUserEntity updateUserWithAuthorities(NtsUserEntity user, List<Tuple2<NtsUserEntity, Optional<String>>> tuples) {
         user.setAuthorities(
             tuples
                 .stream()
                 .filter(t -> t.getT2().isPresent())
                 .map(t -> {
-                    Authority authority = new Authority();
+                    NtsAuthority authority = new NtsAuthority();
                     authority.setName(t.getT2().get());
                     return authority;
                 })

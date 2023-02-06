@@ -1,8 +1,8 @@
 package org.nentangso.core.service.dto;
 
 import org.nentangso.core.config.NtsConstants;
-import org.nentangso.core.domain.Authority;
-import org.nentangso.core.domain.UserEntity;
+import org.nentangso.core.domain.NtsAuthority;
+import org.nentangso.core.domain.NtsUserEntity;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 /**
  * A DTO representing a user, with his authorities.
  */
-public class AdminUserDTO implements Serializable {
+public class NtsAdminUserDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -55,11 +55,11 @@ public class AdminUserDTO implements Serializable {
 
     private Set<String> authorities;
 
-    public AdminUserDTO() {
+    public NtsAdminUserDTO() {
         // Empty constructor needed for Jackson.
     }
 
-    public AdminUserDTO(UserEntity user) {
+    public NtsAdminUserDTO(NtsUserEntity user) {
         this.id = user.getId();
         this.login = user.getLogin();
         this.firstName = user.getFirstName();
@@ -72,7 +72,7 @@ public class AdminUserDTO implements Serializable {
         this.createdAt = user.getCreatedAt();
         this.updatedBy = user.getUpdatedBy();
         this.updatedAt = user.getUpdatedAt();
-        this.authorities = user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet());
+        this.authorities = user.getAuthorities().stream().map(NtsAuthority::getName).collect(Collectors.toSet());
     }
 
     public String getId() {
