@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.nentangso</groupId>
         <artifactId>nts-saas-framework-parent</artifactId>
-        <version>1.1.1</version>
+        <version>1.1.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -65,97 +65,97 @@
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-utils</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-core</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-annotations</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-data-jpa</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-helper</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-security-oauth2</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-security-oauth2-webflux</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-security-user</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-security-user-webflux</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-helper-note</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-helper-tags</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-helper-option</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-web-metafield</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-helper-outbox-event</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-web-core</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-web</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-webflux</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-starter-web</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-starter-webflux</artifactId>
-                <version>1.1.1</version>
+                <version>1.1.2-SNAPSHOT</version>
             </dependency>
             <!-- Mobile send notification libs -->
             <dependency>
