@@ -2,8 +2,8 @@ package org.nentangso.core.service.helper;
 
 import org.apache.commons.lang3.StringUtils;
 import org.nentangso.core.annotation.OptionProperties;
-import org.nentangso.core.domain.OptionEntity;
-import org.nentangso.core.repository.OptionRepository;
+import org.nentangso.core.domain.NtsOptionEntity;
+import org.nentangso.core.repository.NtsOptionRepository;
 import org.nentangso.core.service.errors.FormValidationException;
 import org.nentangso.core.service.utils.NtsTextUtils;
 import org.nentangso.core.service.utils.NtsValidationUtils;
@@ -31,9 +31,9 @@ import java.util.stream.Stream;
 public class NtsOptionHelper {
     private static final Logger log = LoggerFactory.getLogger(NtsOptionHelper.class);
 
-    private final OptionRepository optionRepository;
+    private final NtsOptionRepository optionRepository;
 
-    public NtsOptionHelper(OptionRepository optionRepository) {
+    public NtsOptionHelper(NtsOptionRepository optionRepository) {
         this.optionRepository = optionRepository;
     }
 
@@ -42,7 +42,7 @@ public class NtsOptionHelper {
             return Optional.empty();
         }
         return optionRepository.findOneByOptionKey(optionKey)
-            .map(OptionEntity::getOptionValue);
+            .map(NtsOptionEntity::getOptionValue);
     }
 
     @Transactional
@@ -50,8 +50,8 @@ public class NtsOptionHelper {
         if (StringUtils.isBlank(optionKey)) {
             throw new FormValidationException("option_key", "Option key is invalid");
         }
-        OptionEntity option = optionRepository.findOneByOptionKey(optionKey)
-            .orElseGet(() -> new OptionEntity(optionKey, optionValue));
+        NtsOptionEntity option = optionRepository.findOneByOptionKey(optionKey)
+            .orElseGet(() -> new NtsOptionEntity(optionKey, optionValue));
         option.setOptionValue(optionValue);
         optionRepository.save(option);
     }
@@ -149,7 +149,7 @@ public class NtsOptionHelper {
         Set<String> optionKeys = Stream.of(clazz.getDeclaredFields())
             .map(field -> generateOptionKey(field, prefix))
             .collect(Collectors.toSet());
-        List<OptionEntity> options = optionRepository.findByOptionKeyIn(optionKeys);
+        List<NtsOptionEntity> options = optionRepository.findByOptionKeyIn(optionKeys);
         if (options.isEmpty()) {
             NtsValidationUtils.validateObject(output);
             return Optional.of(output);
@@ -179,7 +179,7 @@ public class NtsOptionHelper {
         return prefix;
     }
 
-    private <T> void setValues(T output, Field field, List<OptionEntity> options, String prefix) throws IllegalAccessException {
+    private <T> void setValues(T output, Field field, List<NtsOptionEntity> options, String prefix) throws IllegalAccessException {
         String optionKey = generateOptionKey(field, prefix);
         Type genericType = field.getGenericType();
         if (genericType instanceof ParameterizedType) {
@@ -188,7 +188,7 @@ public class NtsOptionHelper {
             String childrenTypeName = parameterizedType.getActualTypeArguments()[0].getTypeName();
             List<Object> values = options.stream()
                 .filter(f -> StringUtils.equals(f.getOptionKey(), optionKey))
-                .map(OptionEntity::getOptionValue)
+                .map(NtsOptionEntity::getOptionValue)
                 .filter(Objects::nonNull)
                 .map(rawString -> parseValue(field, rawString, childrenTypeName))
                 .collect(Collectors.toList());
@@ -205,7 +205,7 @@ public class NtsOptionHelper {
         } else {
             String rawString = options.stream()
                 .filter(f -> StringUtils.equals(f.getOptionKey(), optionKey))
-                .map(OptionEntity::getOptionValue)
+                .map(NtsOptionEntity::getOptionValue)
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElse(null);
@@ -281,7 +281,7 @@ public class NtsOptionHelper {
         NtsValidationUtils.validateObject(configuration);
         Class<?> clazz = configuration.getClass();
         String prefix = getPrefix(clazz);
-        List<OptionEntity> options = new ArrayList<>();
+        List<NtsOptionEntity> options = new ArrayList<>();
         Set<String> optionKeys = new HashSet<>();
         for (Field field : clazz.getDeclaredFields()) {
             String optionKey = generateOptionKey(field, prefix);
@@ -293,11 +293,11 @@ public class NtsOptionHelper {
                     ParameterizedType parameterizedType = (ParameterizedType) genericType;
                     Collection<?> values = (Collection<?>) field.get(configuration);
                     String childrenTypeName = parameterizedType.getActualTypeArguments()[0].getTypeName();
-                    values.forEach(value -> options.add(new OptionEntity(optionKey, convertValue(value, childrenTypeName))));
+                    values.forEach(value -> options.add(new NtsOptionEntity(optionKey, convertValue(value, childrenTypeName))));
                 } else {
                     Object value = field.get(configuration);
                     String rawValue = convertValue(value, field.getType().getTypeName());
-                    options.add(new OptionEntity(optionKey, rawValue));
+                    options.add(new NtsOptionEntity(optionKey, rawValue));
                 }
             } catch (IllegalAccessException e) {
                 throw new ClassCastException("Type of " + field.getName() + " is not supported");
@@ -306,11 +306,11 @@ public class NtsOptionHelper {
         save(optionKeys, options);
     }
 
-    private void save(Set<String> optionKeys, List<OptionEntity> options) {
-        List<OptionEntity> existOptions = optionRepository.findByOptionKeyIn(optionKeys);
-        List<OptionEntity> addingOptions = new ArrayList<>();
-        for (OptionEntity option : options) {
-            OptionEntity existOption = existOptions.stream()
+    private void save(Set<String> optionKeys, List<NtsOptionEntity> options) {
+        List<NtsOptionEntity> existOptions = optionRepository.findByOptionKeyIn(optionKeys);
+        List<NtsOptionEntity> addingOptions = new ArrayList<>();
+        for (NtsOptionEntity option : options) {
+            NtsOptionEntity existOption = existOptions.stream()
                 .filter(f -> StringUtils.equals(f.getOptionKey(), option.getOptionKey()) && StringUtils.equals(f.getOptionValue(), option.getOptionValue()))
                 .findFirst()
                 .orElse(null);

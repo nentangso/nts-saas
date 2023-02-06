@@ -11,7 +11,7 @@ import java.util.function.Supplier;
  * Represents a generic custom attribute.
  */
 @Schema(description = "Represents a generic custom attribute.")
-public class AttributeDTO implements Serializable {
+public class NtsAttributeDTO implements Serializable {
     /**
      * Key or name of the attribute.
      */
@@ -25,7 +25,7 @@ public class AttributeDTO implements Serializable {
     @Schema(description = "Value of the attribute.")
     private final String value;
 
-    private AttributeDTO(Builder builder) {
+    private NtsAttributeDTO(Builder builder) {
         this.key = builder.key;
         this.value = builder.value;
 
@@ -42,7 +42,7 @@ public class AttributeDTO implements Serializable {
         return new Builder();
     }
 
-    public static Builder newBuilder(AttributeDTO input) {
+    public static Builder newBuilder(NtsAttributeDTO input) {
         return new Builder(input);
     }
 
@@ -62,7 +62,7 @@ public class AttributeDTO implements Serializable {
         private Builder() {
         }
 
-        public Builder(AttributeDTO input) {
+        public Builder(NtsAttributeDTO input) {
             this.key = input.getKey();
             this.value = input.getValue();
         }
@@ -96,8 +96,8 @@ public class AttributeDTO implements Serializable {
             return this;
         }
 
-        public AttributeDTO build() {
-            return new AttributeDTO(this);
+        public NtsAttributeDTO build() {
+            return new NtsAttributeDTO(this);
         }
     }
 }

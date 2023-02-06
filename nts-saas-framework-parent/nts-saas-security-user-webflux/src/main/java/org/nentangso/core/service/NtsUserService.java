@@ -1,13 +1,13 @@
 package org.nentangso.core.service;
 
 import org.nentangso.core.config.NtsConstants;
-import org.nentangso.core.domain.Authority;
-import org.nentangso.core.domain.UserEntity;
-import org.nentangso.core.repository.AuthorityRepository;
-import org.nentangso.core.repository.UserRepository;
+import org.nentangso.core.domain.NtsAuthority;
+import org.nentangso.core.domain.NtsUserEntity;
+import org.nentangso.core.repository.NtsAuthorityRepository;
+import org.nentangso.core.repository.NtsUserRepository;
 import org.nentangso.core.security.SecurityUtils;
-import org.nentangso.core.service.dto.AdminUserDTO;
-import org.nentangso.core.service.dto.UserDTO;
+import org.nentangso.core.service.dto.NtsAdminUserDTO;
+import org.nentangso.core.service.dto.NtsUserDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -36,11 +36,11 @@ public class NtsUserService {
 
     private final Logger log = LoggerFactory.getLogger(NtsUserService.class);
 
-    private final UserRepository userRepository;
+    private final NtsUserRepository userRepository;
 
-    private final AuthorityRepository authorityRepository;
+    private final NtsAuthorityRepository authorityRepository;
 
-    public NtsUserService(UserRepository userRepository, AuthorityRepository authorityRepository) {
+    public NtsUserService(NtsUserRepository userRepository, NtsAuthorityRepository authorityRepository) {
         this.userRepository = userRepository;
         this.authorityRepository = authorityRepository;
     }
@@ -75,12 +75,12 @@ public class NtsUserService {
     }
 
     @Transactional
-    public Mono<UserEntity> saveUser(UserEntity user) {
+    public Mono<NtsUserEntity> saveUser(NtsUserEntity user) {
         return saveUser(user, false);
     }
 
     @Transactional
-    public Mono<UserEntity> saveUser(UserEntity user, boolean forceCreate) {
+    public Mono<NtsUserEntity> saveUser(NtsUserEntity user, boolean forceCreate) {
         return SecurityUtils
             .getCurrentUserLogin()
             .switchIfEmpty(Mono.just(NtsConstants.SYSTEM))
@@ -91,7 +91,7 @@ public class NtsUserService {
                 user.setUpdatedBy(login);
                 // Saving the relationship can be done in an entity callback
                 // once https://github.com/spring-projects/spring-data-r2dbc/issues/215 is done
-                Mono<UserEntity> persistedUser;
+                Mono<NtsUserEntity> persistedUser;
                 if (forceCreate) {
                     persistedUser = userRepository.create(user);
                 } else {
@@ -107,13 +107,13 @@ public class NtsUserService {
     }
 
     @Transactional(readOnly = true)
-    public Flux<AdminUserDTO> getAllManagedUsers(Pageable pageable) {
-        return userRepository.findAllWithAuthorities(pageable).map(AdminUserDTO::new);
+    public Flux<NtsAdminUserDTO> getAllManagedUsers(Pageable pageable) {
+        return userRepository.findAllWithAuthorities(pageable).map(NtsAdminUserDTO::new);
     }
 
     @Transactional(readOnly = true)
-    public Flux<UserDTO> getAllPublicUsers(Pageable pageable) {
-        return userRepository.findAllByIdNotNullAndActivatedIsTrue(pageable).map(UserDTO::new);
+    public Flux<NtsUserDTO> getAllPublicUsers(Pageable pageable) {
+        return userRepository.findAllByIdNotNullAndActivatedIsTrue(pageable).map(NtsUserDTO::new);
     }
 
     @Transactional(readOnly = true)
@@ -122,7 +122,7 @@ public class NtsUserService {
     }
 
     @Transactional(readOnly = true)
-    public Mono<UserEntity> getUserWithAuthoritiesByLogin(String login) {
+    public Mono<NtsUserEntity> getUserWithAuthoritiesByLogin(String login) {
         return userRepository.findOneWithAuthoritiesByLogin(login);
     }
 
@@ -133,21 +133,21 @@ public class NtsUserService {
      */
     @Transactional(readOnly = true)
     public Flux<String> getAuthorities() {
-        return authorityRepository.findAll().map(Authority::getName);
+        return authorityRepository.findAll().map(NtsAuthority::getName);
     }
 
-    private Mono<UserEntity> syncUserWithIdP(Map<String, Object> details, UserEntity user) {
+    private Mono<NtsUserEntity> syncUserWithIdP(Map<String, Object> details, NtsUserEntity user) {
         // save authorities in to sync user roles/groups between IdP and JHipster's local database
-        Collection<String> userAuthorities = user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toList());
+        Collection<String> userAuthorities = user.getAuthorities().stream().map(NtsAuthority::getName).collect(Collectors.toList());
 
         return getAuthorities()
             .collectList()
             .flatMapMany(dbAuthorities -> {
-                List<Authority> authoritiesToSave = userAuthorities
+                List<NtsAuthority> authoritiesToSave = userAuthorities
                     .stream()
                     .filter(authority -> !dbAuthorities.contains(authority))
                     .map(authority -> {
-                        Authority authorityToSave = new Authority();
+                        NtsAuthority authorityToSave = new NtsAuthority();
                         authorityToSave.setName(authority);
                         return authorityToSave;
                     })
@@ -190,7 +190,7 @@ public class NtsUserService {
      * @return the user from the authentication.
      */
     @Transactional
-    public Mono<AdminUserDTO> getUserFromAuthentication(AbstractAuthenticationToken authToken) {
+    public Mono<NtsAdminUserDTO> getUserFromAuthentication(AbstractAuthenticationToken authToken) {
         Map<String, Object> attributes;
         if (authToken instanceof OAuth2AuthenticationToken) {
             attributes = ((OAuth2AuthenticationToken) authToken).getPrincipal().getAttributes();
@@ -199,25 +199,25 @@ public class NtsUserService {
         } else {
             throw new IllegalArgumentException("AuthenticationToken is not OAuth2 or JWT!");
         }
-        UserEntity user = getUser(attributes);
+        NtsUserEntity user = getUser(attributes);
         user.setAuthorities(
             authToken
                 .getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .map(authority -> {
-                    Authority auth = new Authority();
+                    NtsAuthority auth = new NtsAuthority();
                     auth.setName(authority);
                     return auth;
                 })
                 .collect(Collectors.toSet())
         );
 
-        return syncUserWithIdP(attributes, user).flatMap(u -> Mono.just(new AdminUserDTO(u)));
+        return syncUserWithIdP(attributes, user).flatMap(u -> Mono.just(new NtsAdminUserDTO(u)));
     }
 
-    private static UserEntity getUser(Map<String, Object> details) {
-        UserEntity user = new UserEntity();
+    private static NtsUserEntity getUser(Map<String, Object> details) {
+        NtsUserEntity user = new NtsUserEntity();
         Boolean activated = Boolean.TRUE;
         String sub = String.valueOf(details.get("sub"));
         String username = null;

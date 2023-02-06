@@ -1,14 +1,14 @@
 package org.nentangso.core.service;
 
 import org.nentangso.core.config.NtsConstants;
-import org.nentangso.core.domain.Authority;
-import org.nentangso.core.domain.UserEntity;
-import org.nentangso.core.repository.AuthorityRepository;
-import org.nentangso.core.repository.UserRepository;
+import org.nentangso.core.domain.NtsAuthority;
+import org.nentangso.core.domain.NtsUserEntity;
+import org.nentangso.core.repository.NtsAuthorityRepository;
+import org.nentangso.core.repository.NtsUserRepository;
 import org.nentangso.core.security.SecurityUtils;
-import org.nentangso.core.service.dto.AdminUserDTO;
-import org.nentangso.core.service.dto.UserDTO;
-import org.nentangso.core.service.mapper.UserMapper;
+import org.nentangso.core.service.dto.NtsAdminUserDTO;
+import org.nentangso.core.service.dto.NtsUserDTO;
+import org.nentangso.core.service.mapper.NtsUserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -36,15 +36,15 @@ public class NtsUserService {
 
     private final Logger log = LoggerFactory.getLogger(NtsUserService.class);
 
-    private final UserRepository userRepository;
+    private final NtsUserRepository userRepository;
 
-    private final AuthorityRepository authorityRepository;
+    private final NtsAuthorityRepository authorityRepository;
 
-    private final UserMapper userMapper;
+    private final NtsUserMapper userMapper;
 
     private final CacheManager cacheManager;
 
-    public NtsUserService(UserRepository userRepository, AuthorityRepository authorityRepository, UserMapper userMapper, CacheManager cacheManager) {
+    public NtsUserService(NtsUserRepository userRepository, NtsAuthorityRepository authorityRepository, NtsUserMapper userMapper, CacheManager cacheManager) {
         this.userRepository = userRepository;
         this.authorityRepository = authorityRepository;
         this.userMapper = userMapper;
@@ -78,17 +78,17 @@ public class NtsUserService {
     }
 
     @Transactional(readOnly = true)
-    public Page<AdminUserDTO> getAllManagedUsers(Pageable pageable) {
+    public Page<NtsAdminUserDTO> getAllManagedUsers(Pageable pageable) {
         return userRepository.findAll(pageable).map(userMapper::userToAdminUserDTO);
     }
 
     @Transactional(readOnly = true)
-    public Page<UserDTO> getAllPublicUsers(Pageable pageable) {
+    public Page<NtsUserDTO> getAllPublicUsers(Pageable pageable) {
         return userRepository.findAllByIdNotNullAndActivatedIsTrue(pageable).map(userMapper::userToUserDTO);
     }
 
     @Transactional(readOnly = true)
-    public Optional<UserEntity> getUserWithAuthoritiesByLogin(String login) {
+    public Optional<NtsUserEntity> getUserWithAuthoritiesByLogin(String login) {
         return userRepository.findOneWithAuthoritiesByLogin(login);
     }
 
@@ -98,23 +98,23 @@ public class NtsUserService {
      */
     @Transactional(readOnly = true)
     public List<String> getAuthorities() {
-        return authorityRepository.findAll().stream().map(Authority::getName).collect(Collectors.toList());
+        return authorityRepository.findAll().stream().map(NtsAuthority::getName).collect(Collectors.toList());
     }
 
-    private UserEntity syncUserWithIdP(Map<String, Object> details, UserEntity user) {
+    private NtsUserEntity syncUserWithIdP(Map<String, Object> details, NtsUserEntity user) {
         // save authorities in to sync user roles/groups between IdP and JHipster's local database
         Collection<String> dbAuthorities = getAuthorities();
-        Collection<String> userAuthorities = user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toList());
+        Collection<String> userAuthorities = user.getAuthorities().stream().map(NtsAuthority::getName).collect(Collectors.toList());
         for (String authority : userAuthorities) {
             if (!dbAuthorities.contains(authority)) {
                 log.debug("Saving authority '{}' in local database", authority);
-                Authority authorityToSave = new Authority();
+                NtsAuthority authorityToSave = new NtsAuthority();
                 authorityToSave.setName(authority);
                 authorityRepository.save(authorityToSave);
             }
         }
         // save account in to sync users between IdP and JHipster's local database
-        Optional<UserEntity> existingUser = userRepository.findOneByLogin(user.getLogin());
+        Optional<NtsUserEntity> existingUser = userRepository.findOneByLogin(user.getLogin());
         if (existingUser.isPresent()) {
             // if IdP sends last updated information, use it to determine if an update should happen
             if (details.get("updated_at") != null) {
@@ -150,7 +150,7 @@ public class NtsUserService {
      * @return the user from the authentication.
      */
     @Transactional
-    public AdminUserDTO getUserFromAuthentication(AbstractAuthenticationToken authToken) {
+    public NtsAdminUserDTO getUserFromAuthentication(AbstractAuthenticationToken authToken) {
         Map<String, Object> attributes;
         if (authToken instanceof OAuth2AuthenticationToken) {
             attributes = ((OAuth2AuthenticationToken) authToken).getPrincipal().getAttributes();
@@ -159,14 +159,14 @@ public class NtsUserService {
         } else {
             throw new IllegalArgumentException("AuthenticationToken is not OAuth2 or JWT!");
         }
-        UserEntity user = getUser(attributes);
+        NtsUserEntity user = getUser(attributes);
         user.setAuthorities(
             authToken
                 .getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .map(authority -> {
-                    Authority auth = new Authority();
+                    NtsAuthority auth = new NtsAuthority();
                     auth.setName(authority);
                     return auth;
                 })
@@ -176,8 +176,8 @@ public class NtsUserService {
         return userMapper.userToAdminUserDTO(syncUserWithIdP(attributes, user));
     }
 
-    private static UserEntity getUser(Map<String, Object> details) {
-        UserEntity user = new UserEntity();
+    private static NtsUserEntity getUser(Map<String, Object> details) {
+        NtsUserEntity user = new NtsUserEntity();
         Boolean activated = Boolean.TRUE;
         // handle resource server JWT, where sub claim is email and uid is ID
         if (details.get("uid") != null) {
@@ -229,10 +229,10 @@ public class NtsUserService {
         return user;
     }
 
-    private void clearUserCaches(UserEntity user) {
-        Objects.requireNonNull(cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE)).evict(user.getLogin());
+    private void clearUserCaches(NtsUserEntity user) {
+        Objects.requireNonNull(cacheManager.getCache(NtsUserRepository.USERS_BY_LOGIN_CACHE)).evict(user.getLogin());
         if (user.getEmail() != null) {
-            Objects.requireNonNull(cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE)).evict(user.getEmail());
+            Objects.requireNonNull(cacheManager.getCache(NtsUserRepository.USERS_BY_EMAIL_CACHE)).evict(user.getEmail());
         }
     }
 }

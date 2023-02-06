@@ -1,6 +1,6 @@
 package org.nentangso.core.repository;
 
-import org.nentangso.core.domain.UserEntity;
+import org.nentangso.core.domain.NtsUserEntity;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,19 +11,19 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 /**
- * Spring Data JPA repository for the {@link UserEntity} entity.
+ * Spring Data JPA repository for the {@link NtsUserEntity} entity.
  */
 @Repository
-public interface UserRepository extends JpaRepository<UserEntity, String> {
+public interface NtsUserRepository extends JpaRepository<NtsUserEntity, String> {
     String USERS_BY_LOGIN_CACHE = "usersByLogin";
 
     String USERS_BY_EMAIL_CACHE = "usersByEmail";
 
-    Optional<UserEntity> findOneByLogin(String login);
+    Optional<NtsUserEntity> findOneByLogin(String login);
 
     @EntityGraph(attributePaths = "authorities")
     @Cacheable(cacheNames = USERS_BY_LOGIN_CACHE)
-    Optional<UserEntity> findOneWithAuthoritiesByLogin(String login);
+    Optional<NtsUserEntity> findOneWithAuthoritiesByLogin(String login);
 
-    Page<UserEntity> findAllByIdNotNullAndActivatedIsTrue(Pageable pageable);
+    Page<NtsUserEntity> findAllByIdNotNullAndActivatedIsTrue(Pageable pageable);
 }

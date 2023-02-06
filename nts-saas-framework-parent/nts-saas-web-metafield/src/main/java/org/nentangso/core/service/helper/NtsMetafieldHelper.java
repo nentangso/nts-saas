@@ -1,11 +1,11 @@
 package org.nentangso.core.service.helper;
 
 import org.apache.commons.lang3.StringUtils;
-import org.nentangso.core.domain.MetafieldEntity;
-import org.nentangso.core.repository.MetafieldRepository;
-import org.nentangso.core.service.dto.MetafieldDTO;
+import org.nentangso.core.domain.NtsMetafieldEntity;
+import org.nentangso.core.repository.NtsMetafieldRepository;
+import org.nentangso.core.service.dto.NtsMetafieldDTO;
 import org.nentangso.core.service.errors.NotFoundException;
-import org.nentangso.core.service.mapper.MetafieldMapper;
+import org.nentangso.core.service.mapper.NtsMetafieldMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -27,21 +27,21 @@ import java.util.stream.Collectors;
 public class NtsMetafieldHelper {
     private static final Logger log = LoggerFactory.getLogger(NtsMetafieldHelper.class);
 
-    private final MetafieldRepository metafieldRepository;
-    private final MetafieldMapper metafieldMapper;
+    private final NtsMetafieldRepository metafieldRepository;
+    private final NtsMetafieldMapper metafieldMapper;
 
-    public NtsMetafieldHelper(MetafieldRepository metafieldRepository, MetafieldMapper metafieldMapper) {
+    public NtsMetafieldHelper(NtsMetafieldRepository metafieldRepository, NtsMetafieldMapper metafieldMapper) {
         this.metafieldRepository = metafieldRepository;
         this.metafieldMapper = metafieldMapper;
     }
 
     @Transactional
-    public MetafieldDTO save(MetafieldDTO metafieldDTO) {
+    public NtsMetafieldDTO save(NtsMetafieldDTO metafieldDTO) {
         log.debug("Request to save metafield: {}", metafieldDTO);
         if (metafieldDTO == null) {
             throw new IllegalArgumentException("metafieldDTO");
         }
-        MetafieldEntity metafieldEntity = new MetafieldEntity()
+        NtsMetafieldEntity metafieldEntity = new NtsMetafieldEntity()
             .ownerResource(metafieldDTO.getOwnerResource())
             .ownerId(metafieldDTO.getOwnerId());
         if (metafieldDTO.getId() != null) {
@@ -57,7 +57,7 @@ public class NtsMetafieldHelper {
         return metafieldMapper.toDto(metafieldEntity);
     }
 
-    public Optional<MetafieldDTO> findOne(String ownerResource, Long ownerId, Long id) {
+    public Optional<NtsMetafieldDTO> findOne(String ownerResource, Long ownerId, Long id) {
         if (StringUtils.isBlank(ownerResource) || ownerId == null || ownerId <= 0 || id == null || id <= 0) {
             return Optional.empty();
         }
@@ -67,7 +67,7 @@ public class NtsMetafieldHelper {
             .map(metafieldMapper::toDto);
     }
 
-    public List<MetafieldDTO> findAllByOwner(String ownerResource, Long ownerId) {
+    public List<NtsMetafieldDTO> findAllByOwner(String ownerResource, Long ownerId) {
         if (StringUtils.isBlank(ownerResource) || ownerId == null || ownerId <= 0) {
             return Collections.emptyList();
         }
@@ -87,7 +87,7 @@ public class NtsMetafieldHelper {
     @Transactional
     public void delete(String ownerResource, Long ownerId, Long id) {
         if (StringUtils.isBlank(ownerResource) || ownerId == null || ownerId <= 0 || id == null || id <= 0) return;
-        MetafieldEntity metafieldEntity = metafieldRepository.findById(id)
+        NtsMetafieldEntity metafieldEntity = metafieldRepository.findById(id)
             .filter(m -> StringUtils.equalsIgnoreCase(m.getOwnerResource(), ownerResource))
             .filter(m -> Objects.equals(m.getOwnerId(), ownerId))
             .orElseThrow(NotFoundException::new);

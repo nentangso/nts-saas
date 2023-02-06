@@ -23,7 +23,7 @@ import java.io.Serializable;
 @Table(name = "nts_metafields")
 @Where(clause = "deleted = false")
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-public class MetafieldEntity extends AbstractAuditingEntity implements Serializable {
+public class NtsMetafieldEntity extends AbstractAuditingEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -117,7 +117,7 @@ public class MetafieldEntity extends AbstractAuditingEntity implements Serializa
         this.ownerResource = ownerResource;
     }
 
-    public MetafieldEntity ownerResource(String ownerResource) {
+    public NtsMetafieldEntity ownerResource(String ownerResource) {
         this.setOwnerResource(ownerResource);
         return this;
     }
@@ -130,7 +130,7 @@ public class MetafieldEntity extends AbstractAuditingEntity implements Serializa
         this.ownerId = ownerId;
     }
 
-    public MetafieldEntity ownerId(Long ownerId) {
+    public NtsMetafieldEntity ownerId(Long ownerId) {
         this.setOwnerId(ownerId);
         return this;
     }
@@ -143,7 +143,7 @@ public class MetafieldEntity extends AbstractAuditingEntity implements Serializa
         this.namespace = namespace;
     }
 
-    public MetafieldEntity namespace(String namespace) {
+    public NtsMetafieldEntity namespace(String namespace) {
         this.setNamespace(namespace);
         return this;
     }
@@ -156,7 +156,7 @@ public class MetafieldEntity extends AbstractAuditingEntity implements Serializa
         this.key = key;
     }
 
-    public MetafieldEntity key(String key) {
+    public NtsMetafieldEntity key(String key) {
         this.setKey(key);
         return this;
     }
@@ -169,7 +169,7 @@ public class MetafieldEntity extends AbstractAuditingEntity implements Serializa
         this.value = value;
     }
 
-    public MetafieldEntity value(String value) {
+    public NtsMetafieldEntity value(String value) {
         this.setValue(value);
         return this;
     }
@@ -182,7 +182,7 @@ public class MetafieldEntity extends AbstractAuditingEntity implements Serializa
         this.type = type;
     }
 
-    public MetafieldEntity type(String type) {
+    public NtsMetafieldEntity type(String type) {
         this.setType(type);
         return this;
     }
@@ -195,7 +195,7 @@ public class MetafieldEntity extends AbstractAuditingEntity implements Serializa
         this.description = description;
     }
 
-    public MetafieldEntity description(String description) {
+    public NtsMetafieldEntity description(String description) {
         this.setDescription(description);
         return this;
     }
@@ -213,10 +213,10 @@ public class MetafieldEntity extends AbstractAuditingEntity implements Serializa
         if (this == o) {
             return true;
         }
-        if (!(o instanceof MetafieldEntity)) {
+        if (!(o instanceof NtsMetafieldEntity)) {
             return false;
         }
-        return id != null && id.equals(((MetafieldEntity) o).id);
+        return id != null && id.equals(((NtsMetafieldEntity) o).id);
     }
 
     @Override

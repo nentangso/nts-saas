@@ -1,8 +1,8 @@
 package org.nentangso.core.service.helper;
 
 import org.apache.commons.lang3.StringUtils;
-import org.nentangso.core.domain.NoteEntity;
-import org.nentangso.core.repository.NoteRepository;
+import org.nentangso.core.domain.NtsNoteEntity;
+import org.nentangso.core.repository.NtsNoteRepository;
 import org.nentangso.core.service.errors.NotFoundException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
@@ -21,9 +21,9 @@ import java.util.stream.Collectors;
 )
 @Service
 public class NtsNoteHelper {
-    private final NoteRepository noteRepository;
+    private final NtsNoteRepository noteRepository;
 
-    public NtsNoteHelper(NoteRepository noteRepository) {
+    public NtsNoteHelper(NtsNoteRepository noteRepository) {
         this.noteRepository = noteRepository;
     }
 
@@ -31,7 +31,7 @@ public class NtsNoteHelper {
         if (id == null || id <= 0) {
             return Optional.empty();
         }
-        return noteRepository.findById(id).map(NoteEntity::getNote);
+        return noteRepository.findById(id).map(NtsNoteEntity::getNote);
     }
 
     public Map<Long, String> findAllNoteById(Collection<@NotNull @Min(1) Long> ids) {
@@ -39,18 +39,18 @@ public class NtsNoteHelper {
             return Collections.emptyMap();
         }
         return noteRepository.findAllById(ids).stream()
-            .collect(Collectors.toMap(NoteEntity::getId, NoteEntity::getNote));
+            .collect(Collectors.toMap(NtsNoteEntity::getId, NtsNoteEntity::getNote));
     }
 
     @Transactional
-    public Optional<NoteEntity> save(String note, Long id) {
+    public Optional<NtsNoteEntity> save(String note, Long id) {
         if (StringUtils.isEmpty(note)) {
             if (Objects.nonNull(id)) {
                 noteRepository.deleteById(id);
             }
             return Optional.empty();
         }
-        NoteEntity noteEntity = new NoteEntity();
+        NtsNoteEntity noteEntity = new NtsNoteEntity();
         if (Objects.nonNull(id)) {
             noteEntity = noteRepository.findById(id).orElseThrow(NotFoundException::new);
             if (StringUtils.equals(noteEntity.getNote(), note)) {
@@ -62,7 +62,7 @@ public class NtsNoteHelper {
     }
 
     @Transactional
-    public Optional<NoteEntity> save(String note, NoteEntity noteEntity) {
+    public Optional<NtsNoteEntity> save(String note, NtsNoteEntity noteEntity) {
         if (StringUtils.isEmpty(note)) {
             if (Objects.nonNull(noteEntity) && Objects.nonNull(noteEntity.getId())) {
                 noteRepository.deleteById(noteEntity.getId());
@@ -70,7 +70,7 @@ public class NtsNoteHelper {
             return Optional.empty();
         }
         if (Objects.isNull(noteEntity) || Objects.isNull(noteEntity.getId())) {
-            noteEntity = new NoteEntity();
+            noteEntity = new NtsNoteEntity();
         }
         if (StringUtils.equals(noteEntity.getNote(), note)) {
             return Optional.of(noteEntity);

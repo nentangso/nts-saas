@@ -1,13 +1,13 @@
 package org.nentangso.core.web.rest.vm;
 
-import org.nentangso.core.service.dto.AdminUserDTO;
+import org.nentangso.core.service.dto.NtsAdminUserDTO;
 
 /**
  * View Model extending the AdminUserDTO, which is meant to be used in the user management UI.
  */
-public class ManagedUserVM extends AdminUserDTO {
+public class NtsManagedUserVM extends NtsAdminUserDTO {
 
-    public ManagedUserVM() {
+    public NtsManagedUserVM() {
         // Empty constructor needed for Jackson.
     }
 

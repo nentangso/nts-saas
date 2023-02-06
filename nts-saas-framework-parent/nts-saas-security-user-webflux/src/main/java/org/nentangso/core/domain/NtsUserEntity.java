@@ -20,7 +20,7 @@ import org.springframework.data.relational.core.mapping.Table;
  * A user.
  */
 @Table("nts_users")
-public class UserEntity extends AbstractAuditingEntity implements Serializable {
+public class NtsUserEntity extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -57,7 +57,7 @@ public class UserEntity extends AbstractAuditingEntity implements Serializable {
 
     @JsonIgnore
     @Transient
-    private Set<Authority> authorities = new HashSet<>();
+    private Set<NtsAuthority> authorities = new HashSet<>();
 
     public String getId() {
         return id;
@@ -124,11 +124,11 @@ public class UserEntity extends AbstractAuditingEntity implements Serializable {
         this.langKey = langKey;
     }
 
-    public Set<Authority> getAuthorities() {
+    public Set<NtsAuthority> getAuthorities() {
         return authorities;
     }
 
-    public void setAuthorities(Set<Authority> authorities) {
+    public void setAuthorities(Set<NtsAuthority> authorities) {
         this.authorities = authorities;
     }
 
@@ -137,10 +137,10 @@ public class UserEntity extends AbstractAuditingEntity implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof UserEntity)) {
+        if (!(o instanceof NtsUserEntity)) {
             return false;
         }
-        return id != null && id.equals(((UserEntity) o).id);
+        return id != null && id.equals(((NtsUserEntity) o).id);
     }
 
     @Override

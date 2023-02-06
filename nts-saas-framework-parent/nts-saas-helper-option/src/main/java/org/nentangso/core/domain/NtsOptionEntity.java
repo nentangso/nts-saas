@@ -5,47 +5,60 @@ import org.hibernate.annotations.Where;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
- * Tags
+ * Options
  */
 @ConditionalOnProperty(
-    prefix = "nts.helper.tag",
+    prefix = "nts.helper.option",
     name = "enabled",
     havingValue = "true"
 )
 @Entity
-@Table(name = "nts_tags")
+@Table(name = "nts_options")
 @Where(clause = "deleted = false")
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-public class TagsEntity extends AbstractAuditingEntity implements Serializable {
+public class NtsOptionEntity extends AbstractAuditingEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * Id
-     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
     /**
-     * Tags
+     * Option key
      */
-    @Lob
-    @NotNull
-    @Size(max = 65535)
-    @Column(name = "tags", length = 65535, nullable = false)
-    private String tags;
+    @NotBlank
+    @Size(max = 50)
+    @Column(name = "option_key", length = 50, nullable = false)
+    @Pattern(regexp = "^[a-zA-Z0-9_.-]+$")
+    private String optionKey;
+
+    /**
+     * Option value
+     */
+    @Size(max = 255)
+    @Column(name = "option_value")
+    private String optionValue;
 
     /**
      * Soft delete
      */
     @Column(name = "deleted", nullable = false)
     private boolean deleted = false;
+
+    public NtsOptionEntity() {
+    }
+
+    public NtsOptionEntity(String optionKey, String optionValue) {
+        this.optionKey = optionKey;
+        this.optionValue = optionValue;
+    }
 
     public Long getId() {
         return id;
@@ -55,12 +68,20 @@ public class TagsEntity extends AbstractAuditingEntity implements Serializable {
         this.id = id;
     }
 
-    public String getTags() {
-        return tags;
+    public String getOptionKey() {
+        return optionKey;
     }
 
-    public void setTags(String note) {
-        this.tags = note;
+    public void setOptionKey(String optionKey) {
+        this.optionKey = optionKey;
+    }
+
+    public String getOptionValue() {
+        return optionValue;
+    }
+
+    public void setOptionValue(String optionValue) {
+        this.optionValue = optionValue;
     }
 
     public boolean isDeleted() {
@@ -76,10 +97,10 @@ public class TagsEntity extends AbstractAuditingEntity implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof TagsEntity)) {
+        if (!(o instanceof NtsOptionEntity)) {
             return false;
         }
-        return id != null && id.equals(((TagsEntity) o).id);
+        return id != null && id.equals(((NtsOptionEntity) o).id);
     }
 
     @Override
@@ -90,9 +111,10 @@ public class TagsEntity extends AbstractAuditingEntity implements Serializable {
     // prettier-ignore
     @Override
     public String toString() {
-        return "TagsEntity{" +
+        return "OptionEntity{" +
             "id=" + id +
-            ", tags='" + tags + '\'' +
+            ", optionKey='" + optionKey + '\'' +
+            ", optionValue='" + optionValue + '\'' +
             ", deleted=" + deleted +
             ", createdBy='" + getCreatedBy() + '\'' +
             ", createdAt=" + getCreatedAt() +

@@ -3,41 +3,43 @@ package org.nentangso.core.service.mapper;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
-import org.nentangso.core.domain.Authority;
-import org.nentangso.core.domain.UserEntity;
-import org.nentangso.core.service.dto.AdminUserDTO;
-import org.nentangso.core.service.dto.UserDTO;
+import org.nentangso.core.domain.NtsAuthority;
+import org.nentangso.core.domain.NtsUserEntity;
+import org.nentangso.core.service.dto.NtsAdminUserDTO;
+import org.nentangso.core.service.dto.NtsUserDTO;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Mapper for the entity {@link UserEntity} and its DTO called {@link UserDTO}.
+ * Mapper for the entity {@link NtsUserEntity} and its DTO called {@link NtsUserDTO}.
  *
  * Normal mappers are generated using MapStruct, this one is hand-coded as MapStruct
  * support is still in beta, and requires a manual step with an IDE.
  */
 @Service
-public class UserMapper {
+@ConditionalOnMissingBean(name = "userMapper")
+public class NtsUserMapper {
 
-    public List<UserDTO> usersToUserDTOs(List<UserEntity> users) {
+    public List<NtsUserDTO> usersToUserDTOs(List<NtsUserEntity> users) {
         return users.stream().filter(Objects::nonNull).map(this::userToUserDTO).collect(Collectors.toList());
     }
 
-    public UserDTO userToUserDTO(UserEntity user) {
-        UserDTO userDTO = new UserDTO();
+    public NtsUserDTO userToUserDTO(NtsUserEntity user) {
+        NtsUserDTO userDTO = new NtsUserDTO();
         userDTO.setId(user.getId());
         userDTO.setLogin(user.getLogin());
         return userDTO;
     }
 
-    public List<AdminUserDTO> usersToAdminUserDTOs(List<UserEntity> users) {
+    public List<NtsAdminUserDTO> usersToAdminUserDTOs(List<NtsUserEntity> users) {
         return users.stream().filter(Objects::nonNull).map(this::userToAdminUserDTO).collect(Collectors.toList());
     }
 
-    public AdminUserDTO userToAdminUserDTO(UserEntity user) {
-        AdminUserDTO adminUserDTO = new AdminUserDTO();
+    public NtsAdminUserDTO userToAdminUserDTO(NtsUserEntity user) {
+        NtsAdminUserDTO adminUserDTO = new NtsAdminUserDTO();
         adminUserDTO.setId(user.getId());
         adminUserDTO.setLogin(user.getLogin());
         adminUserDTO.setFirstName(user.getFirstName());
@@ -50,20 +52,20 @@ public class UserMapper {
         adminUserDTO.setCreatedAt(user.getCreatedAt());
         adminUserDTO.setUpdatedBy(user.getUpdatedBy());
         adminUserDTO.setUpdatedAt(user.getUpdatedAt());
-        var authorities = user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet());
+        var authorities = user.getAuthorities().stream().map(NtsAuthority::getName).collect(Collectors.toSet());
         adminUserDTO.setAuthorities(authorities);
         return adminUserDTO;
     }
 
-    public List<UserEntity> userDTOsToUsers(List<AdminUserDTO> userDTOs) {
+    public List<NtsUserEntity> userDTOsToUsers(List<NtsAdminUserDTO> userDTOs) {
         return userDTOs.stream().filter(Objects::nonNull).map(this::userDTOToUser).collect(Collectors.toList());
     }
 
-    public UserEntity userDTOToUser(AdminUserDTO userDTO) {
+    public NtsUserEntity userDTOToUser(NtsAdminUserDTO userDTO) {
         if (userDTO == null) {
             return null;
         } else {
-            UserEntity user = new UserEntity();
+            NtsUserEntity user = new NtsUserEntity();
             user.setId(userDTO.getId());
             user.setLogin(userDTO.getLogin());
             user.setFirstName(userDTO.getFirstName());
@@ -72,21 +74,21 @@ public class UserMapper {
             user.setImageUrl(userDTO.getImageUrl());
             user.setActivated(userDTO.isActivated());
             user.setLangKey(userDTO.getLangKey());
-            Set<Authority> authorities = this.authoritiesFromStrings(userDTO.getAuthorities());
+            Set<NtsAuthority> authorities = this.authoritiesFromStrings(userDTO.getAuthorities());
             user.setAuthorities(authorities);
             return user;
         }
     }
 
-    private Set<Authority> authoritiesFromStrings(Set<String> authoritiesAsString) {
-        Set<Authority> authorities = new HashSet<>();
+    private Set<NtsAuthority> authoritiesFromStrings(Set<String> authoritiesAsString) {
+        Set<NtsAuthority> authorities = new HashSet<>();
 
         if (authoritiesAsString != null) {
             authorities =
                 authoritiesAsString
                     .stream()
                     .map(string -> {
-                        Authority auth = new Authority();
+                        NtsAuthority auth = new NtsAuthority();
                         auth.setName(string);
                         return auth;
                     })
@@ -96,11 +98,11 @@ public class UserMapper {
         return authorities;
     }
 
-    public UserEntity userFromId(String id) {
+    public NtsUserEntity userFromId(String id) {
         if (id == null) {
             return null;
         }
-        UserEntity user = new UserEntity();
+        NtsUserEntity user = new NtsUserEntity();
         user.setId(id);
         return user;
     }
@@ -108,11 +110,11 @@ public class UserMapper {
     @Named("id")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
-    public UserDTO toDtoId(UserEntity user) {
+    public NtsUserDTO toDtoId(NtsUserEntity user) {
         if (user == null) {
             return null;
         }
-        UserDTO userDto = new UserDTO();
+        NtsUserDTO userDto = new NtsUserDTO();
         userDto.setId(user.getId());
         return userDto;
     }
@@ -120,13 +122,13 @@ public class UserMapper {
     @Named("idSet")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
-    public Set<UserDTO> toDtoIdSet(Set<UserEntity> users) {
+    public Set<NtsUserDTO> toDtoIdSet(Set<NtsUserEntity> users) {
         if (users == null) {
             return Collections.emptySet();
         }
 
-        Set<UserDTO> userSet = new HashSet<>();
-        for (UserEntity userEntity : users) {
+        Set<NtsUserDTO> userSet = new HashSet<>();
+        for (NtsUserEntity userEntity : users) {
             userSet.add(this.toDtoId(userEntity));
         }
 
@@ -137,11 +139,11 @@ public class UserMapper {
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
     @Mapping(target = "login", source = "login")
-    public UserDTO toDtoLogin(UserEntity user) {
+    public NtsUserDTO toDtoLogin(NtsUserEntity user) {
         if (user == null) {
             return null;
         }
-        UserDTO userDto = new UserDTO();
+        NtsUserDTO userDto = new NtsUserDTO();
         userDto.setId(user.getId());
         userDto.setLogin(user.getLogin());
         return userDto;
@@ -151,13 +153,13 @@ public class UserMapper {
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
     @Mapping(target = "login", source = "login")
-    public Set<UserDTO> toDtoLoginSet(Set<UserEntity> users) {
+    public Set<NtsUserDTO> toDtoLoginSet(Set<NtsUserEntity> users) {
         if (users == null) {
             return Collections.emptySet();
         }
 
-        Set<UserDTO> userSet = new HashSet<>();
-        for (UserEntity userEntity : users) {
+        Set<NtsUserDTO> userSet = new HashSet<>();
+        for (NtsUserEntity userEntity : users) {
             userSet.add(this.toDtoLogin(userEntity));
         }
 

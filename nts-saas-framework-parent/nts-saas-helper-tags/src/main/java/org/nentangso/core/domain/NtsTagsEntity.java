@@ -10,18 +10,18 @@ import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
- * Note
+ * Tags
  */
 @ConditionalOnProperty(
-    prefix = "nts.helper.note",
+    prefix = "nts.helper.tag",
     name = "enabled",
     havingValue = "true"
 )
 @Entity
-@Table(name = "nts_notes")
+@Table(name = "nts_tags")
 @Where(clause = "deleted = false")
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-public class NoteEntity extends AbstractAuditingEntity implements Serializable {
+public class NtsTagsEntity extends AbstractAuditingEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -33,13 +33,13 @@ public class NoteEntity extends AbstractAuditingEntity implements Serializable {
     private Long id;
 
     /**
-     * Note
+     * Tags
      */
     @Lob
     @NotNull
-    @Size(max = 5000)
-    @Column(name = "note", length = 5000, nullable = false)
-    private String note;
+    @Size(max = 65535)
+    @Column(name = "tags", length = 65535, nullable = false)
+    private String tags;
 
     /**
      * Soft delete
@@ -55,12 +55,12 @@ public class NoteEntity extends AbstractAuditingEntity implements Serializable {
         this.id = id;
     }
 
-    public String getNote() {
-        return note;
+    public String getTags() {
+        return tags;
     }
 
-    public void setNote(String note) {
-        this.note = note;
+    public void setTags(String note) {
+        this.tags = note;
     }
 
     public boolean isDeleted() {
@@ -76,10 +76,10 @@ public class NoteEntity extends AbstractAuditingEntity implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof NoteEntity)) {
+        if (!(o instanceof NtsTagsEntity)) {
             return false;
         }
-        return id != null && id.equals(((NoteEntity) o).id);
+        return id != null && id.equals(((NtsTagsEntity) o).id);
     }
 
     @Override
@@ -90,9 +90,9 @@ public class NoteEntity extends AbstractAuditingEntity implements Serializable {
     // prettier-ignore
     @Override
     public String toString() {
-        return "NoteEntity{" +
+        return "TagsEntity{" +
             "id=" + id +
-            ", note='" + note + '\'' +
+            ", tags='" + tags + '\'' +
             ", deleted=" + deleted +
             ", createdBy='" + getCreatedBy() + '\'' +
             ", createdAt=" + getCreatedAt() +
@@ -100,4 +100,5 @@ public class NoteEntity extends AbstractAuditingEntity implements Serializable {
             ", updatedAt=" + getUpdatedAt() +
             '}';
     }
+
 }
