@@ -15,16 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.validation.BindException;
-import org.springframework.web.HttpMediaTypeNotSupportedException;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.MissingPathVariableException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -140,43 +133,8 @@ public class NtsExceptionTranslator extends ResponseEntityExceptionHandler {
     }
 
     @Override
-    protected Mono<ResponseEntity<Object>> handleMissingPathVariable(MissingPathVariableException ex, HttpHeaders headers, HttpStatus status, ServerWebExchange exchange) {
-        return super.handleMissingPathVariable(ex, headers, HttpStatus.NOT_FOUND, exchange);
-    }
-
-    @Override
-    protected Mono<ResponseEntity<Object>> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatus status, ServerWebExchange exchange) {
-        return super.handleHttpRequestMethodNotSupported(ex, headers, HttpStatus.NOT_ACCEPTABLE, exchange);
-    }
-
-    @Override
-    protected Mono<ResponseEntity<Object>> handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex, HttpHeaders headers, HttpStatus status, ServerWebExchange exchange) {
-        return super.handleHttpMediaTypeNotSupported(ex, headers, HttpStatus.UNSUPPORTED_MEDIA_TYPE, exchange);
-    }
-
-    @Override
-    protected Mono<ResponseEntity<Object>> handleServletRequestBindingException(ServletRequestBindingException ex, HttpHeaders headers, HttpStatus status, ServerWebExchange exchange) {
-        return super.handleServletRequestBindingException(ex, headers, HttpStatus.UNPROCESSABLE_ENTITY, exchange);
-    }
-
-    @Override
     protected Mono<ResponseEntity<Object>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, ServerWebExchange exchange) {
         return super.handleMethodArgumentNotValid(ex, headers, HttpStatus.UNPROCESSABLE_ENTITY, exchange);
-    }
-
-    @Override
-    protected Mono<ResponseEntity<Object>> handleMissingServletRequestPart(MissingServletRequestPartException ex, HttpHeaders headers, HttpStatus status, ServerWebExchange exchange) {
-        return super.handleMissingServletRequestPart(ex, headers, HttpStatus.UNPROCESSABLE_ENTITY, exchange);
-    }
-
-    @Override
-    protected Mono<ResponseEntity<Object>> handleMissingServletRequestParameter(MissingServletRequestParameterException ex, HttpHeaders headers, HttpStatus status, ServerWebExchange exchange) {
-        return super.handleMissingServletRequestParameter(ex, headers, HttpStatus.UNPROCESSABLE_ENTITY, exchange);
-    }
-
-    @Override
-    protected Mono<ResponseEntity<Object>> handleBindException(BindException ex, HttpHeaders headers, HttpStatus status, ServerWebExchange exchange) {
-        return super.handleBindException(ex, headers, HttpStatus.UNPROCESSABLE_ENTITY, exchange);
     }
 
     @Override
@@ -202,12 +160,6 @@ public class NtsExceptionTranslator extends ResponseEntityExceptionHandler {
             errors = ((FormValidationException) ex).getErrors();
         } else if (ex instanceof BadRequestAlertException) {
             errors = Collections.singletonMap(((BadRequestAlertException) ex).getErrorKey(), Collections.singletonList(ex.getMessage()));
-        } else if (ex instanceof BindException) {
-            errors = FormValidationException.buildErrors(((BindException) ex).getBindingResult());
-        } else if (ex instanceof MissingServletRequestParameterException) {
-            errors = Collections.singletonMap(((MissingServletRequestParameterException) ex).getParameterName(), Collections.singletonList(ex.getMessage()));
-        } else if (ex instanceof MissingServletRequestPartException) {
-            errors = Collections.singletonMap(((MissingServletRequestPartException) ex).getRequestPartName(), Collections.singletonList(ex.getMessage()));
         }
         return errors;
     }
