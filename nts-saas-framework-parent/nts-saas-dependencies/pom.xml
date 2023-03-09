@@ -190,11 +190,6 @@
                 <version>${apiguardian-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.zalando</groupId>
-                <artifactId>problem-spring-common</artifactId>
-                <version>${problem-spring.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.checkerframework</groupId>
                 <artifactId>checker-qual</artifactId>
                 <version>${checker-qual.version}</version>
