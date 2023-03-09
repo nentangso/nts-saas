@@ -93,11 +93,6 @@
             <artifactId>guava</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.nentangso</groupId>
             <artifactId>nts-saas-core</artifactId>
         </dependency>
@@ -108,6 +103,11 @@
         <dependency>
             <groupId>org.nentangso</groupId>
             <artifactId>nts-saas-web-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

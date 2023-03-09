@@ -25,7 +25,7 @@ public class NtsSecurityHelper implements InitializingBean {
     private final String rolesClaim;
     private final String rolePrefix;
 
-    private NtsSecurityHelper(
+    public NtsSecurityHelper(
         @Value("${nts.security.oauth2.client.configuration.roles-claim:roles}") String rolesClaim,
         @Value("${nts.security.oauth2.client.configuration.role-prefix:ROLE_}") String rolePrefix
     ) {
