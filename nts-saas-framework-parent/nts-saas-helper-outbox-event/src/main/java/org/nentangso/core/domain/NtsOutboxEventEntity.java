@@ -57,6 +57,7 @@ public class NtsOutboxEventEntity implements Serializable {
     /**
      * Payload
      */
+    @Lob
     @NotNull
     @Size(max = 65535)
     @Column(name = "payload", length = 65535, nullable = false)
