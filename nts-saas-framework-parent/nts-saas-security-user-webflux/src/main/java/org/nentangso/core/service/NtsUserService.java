@@ -1,5 +1,8 @@
 package org.nentangso.core.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import net.minidev.json.JSONArray;
 import org.nentangso.core.config.NtsConstants;
 import org.nentangso.core.domain.NtsAuthority;
 import org.nentangso.core.domain.NtsUserEntity;
@@ -22,9 +25,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -40,9 +41,12 @@ public class NtsUserService {
 
     private final NtsAuthorityRepository authorityRepository;
 
-    public NtsUserService(NtsUserRepository userRepository, NtsAuthorityRepository authorityRepository) {
+    private final ObjectMapper objectMapper;
+
+    public NtsUserService(NtsUserRepository userRepository, NtsAuthorityRepository authorityRepository, ObjectMapper objectMapper) {
         this.userRepository = userRepository;
         this.authorityRepository = authorityRepository;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -212,8 +216,16 @@ public class NtsUserService {
                 })
                 .collect(Collectors.toSet())
         );
+        Set<Long> locationIds = new HashSet<>();
+        try {
+            Long[] locationArrays = objectMapper.readValue(attributes.get("location_ids").toString(), Long[].class);
+            locationIds = new HashSet<>(List.of(locationArrays));
+        } catch (ClassCastException | JsonProcessingException e) {
+            log.error("Error when get location ids: {}", e.getMessage());
+        }
 
-        return syncUserWithIdP(attributes, user).flatMap(u -> Mono.just(new NtsAdminUserDTO(u)));
+        Set<Long> finalLocationIds = locationIds;
+        return syncUserWithIdP(attributes, user).flatMap(u -> Mono.just(new NtsAdminUserDTO(u, finalLocationIds)));
     }
 
     private static NtsUserEntity getUser(Map<String, Object> details) {

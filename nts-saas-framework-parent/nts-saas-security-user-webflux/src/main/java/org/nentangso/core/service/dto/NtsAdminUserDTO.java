@@ -55,6 +55,8 @@ public class NtsAdminUserDTO implements Serializable {
 
     private Set<String> authorities;
 
+    private Set<Long> locationIds;
+
     public NtsAdminUserDTO() {
         // Empty constructor needed for Jackson.
     }
@@ -73,6 +75,23 @@ public class NtsAdminUserDTO implements Serializable {
         this.updatedBy = user.getUpdatedBy();
         this.updatedAt = user.getUpdatedAt();
         this.authorities = user.getAuthorities().stream().map(NtsAuthority::getName).collect(Collectors.toSet());
+    }
+
+    public NtsAdminUserDTO(NtsUserEntity user, Set<Long> locationIds) {
+        this.id = user.getId();
+        this.login = user.getLogin();
+        this.firstName = user.getFirstName();
+        this.lastName = user.getLastName();
+        this.email = user.getEmail();
+        this.activated = user.isActivated();
+        this.imageUrl = user.getImageUrl();
+        this.langKey = user.getLangKey();
+        this.createdBy = user.getCreatedBy();
+        this.createdAt = user.getCreatedAt();
+        this.updatedBy = user.getUpdatedBy();
+        this.updatedAt = user.getUpdatedAt();
+        this.authorities = user.getAuthorities().stream().map(NtsAuthority::getName).collect(Collectors.toSet());
+        this.locationIds = locationIds;
     }
 
     public String getId() {
@@ -179,22 +198,29 @@ public class NtsAdminUserDTO implements Serializable {
         this.authorities = authorities;
     }
 
+    public Set<Long> getLocationIds() { return locationIds; }
+
+    public void setLocationIds(Set<Long> locationIds) { this.locationIds = locationIds; }
+
     // prettier-ignore
+
     @Override
     public String toString() {
-        return "AdminUserDTO{" +
-            "login='" + login + '\'' +
+        return "NtsAdminUserDTO{" +
+            "id='" + id + '\'' +
+            ", login='" + login + '\'' +
             ", firstName='" + firstName + '\'' +
             ", lastName='" + lastName + '\'' +
             ", email='" + email + '\'' +
             ", imageUrl='" + imageUrl + '\'' +
             ", activated=" + activated +
             ", langKey='" + langKey + '\'' +
-            ", createdBy=" + createdBy +
+            ", createdBy='" + createdBy + '\'' +
             ", createdAt=" + createdAt +
             ", updatedBy='" + updatedBy + '\'' +
             ", updatedAt=" + updatedAt +
             ", authorities=" + authorities +
-            "}";
+            ", locationIds=" + locationIds +
+            '}';
     }
 }
