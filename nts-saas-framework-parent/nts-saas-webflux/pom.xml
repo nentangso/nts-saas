@@ -98,5 +98,9 @@
             <groupId>org.nentangso</groupId>
             <artifactId>nts-saas-web-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.nentangso</groupId>
+            <artifactId>nts-saas-security-oauth2-webflux</artifactId>
+        </dependency>
     </dependencies>
 </project>

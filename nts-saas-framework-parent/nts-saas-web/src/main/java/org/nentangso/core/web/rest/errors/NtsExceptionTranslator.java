@@ -12,10 +12,18 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.server.resource.BearerTokenError;
+import org.springframework.security.oauth2.server.resource.BearerTokenErrorCodes;
+import org.springframework.security.oauth2.server.resource.authentication.AbstractOAuth2TokenAuthenticationToken;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -30,7 +38,11 @@ import org.springframework.web.multipart.support.MissingServletRequestPartExcept
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,15 +58,13 @@ import java.util.Map;
 )
 @ControllerAdvice
 @ConditionalOnMissingBean(name = "exceptionTranslator")
-public class NtsExceptionTranslator extends ResponseEntityExceptionHandler {
+public class NtsExceptionTranslator extends ResponseEntityExceptionHandler implements AuthenticationEntryPoint, AccessDeniedHandler {
     private static final Logger log = LoggerFactory.getLogger(NtsExceptionTranslator.class);
 
     @Value("${nts.web.rest.exception-translator.realm-name:API Authentication by nentangso.org}")
     protected String realmName;
 
     @ExceptionHandler({
-        AuthenticationException.class,
-        AccessDeniedException.class,
         ResponseStatusException.class,
         ConcurrencyFailureException.class,
         NotFoundException.class,
@@ -99,6 +109,7 @@ public class NtsExceptionTranslator extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, null, headers, status, request);
     }
 
+    @Deprecated(since = "1.1.5")
     protected String generateAuthenticateHeader(Exception ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         return String.format("Basic realm=\"%s\"", realmName);
     }
@@ -220,5 +231,113 @@ public class NtsExceptionTranslator extends ResponseEntityExceptionHandler {
         HttpHeaders headers = new HttpHeaders();
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         return handleExceptionInternal(ex, null, headers, status, request);
+    }
+
+    /**
+     * Collect error details from the provided parameters and format according to RFC
+     * 6750, specifically {@code error}, {@code error_description}, {@code error_uri}, and
+     * {@code scope}.
+     *
+     * @param request       that resulted in an <code>AuthenticationException</code>
+     * @param response      so that the user agent can begin authentication
+     * @param authException that caused the invocation
+     */
+    @Override
+    @ExceptionHandler(AuthenticationException.class)
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
+        HttpStatus status = getAuthenticationStatus(authException);
+        Map<String, String> parameters = createAuthenticationParameters(authException);
+        respond(response, status, parameters, NtsErrorConstants.MESSAGE_UNAUTHORIZED);
+    }
+
+    protected HttpStatus getAuthenticationStatus(AuthenticationException authException) {
+        if (authException instanceof OAuth2AuthenticationException) {
+            OAuth2Error error = ((OAuth2AuthenticationException) authException).getError();
+            if (error instanceof BearerTokenError) {
+                return ((BearerTokenError) error).getHttpStatus();
+            }
+        }
+        return HttpStatus.UNAUTHORIZED;
+    }
+
+    protected Map<String, String> createAuthenticationParameters(AuthenticationException authException) {
+        Map<String, String> parameters = new LinkedHashMap<>();
+        if (this.realmName != null) {
+            parameters.put("realm", this.realmName);
+        }
+        if (authException instanceof OAuth2AuthenticationException) {
+            OAuth2Error error = ((OAuth2AuthenticationException) authException).getError();
+            parameters.put("error", error.getErrorCode());
+            if (org.springframework.util.StringUtils.hasText(error.getDescription())) {
+                parameters.put("error_description", error.getDescription());
+            }
+            if (org.springframework.util.StringUtils.hasText(error.getUri())) {
+                parameters.put("error_uri", error.getUri());
+            }
+            if (error instanceof BearerTokenError) {
+                BearerTokenError bearerTokenError = (BearerTokenError) error;
+                if (org.springframework.util.StringUtils.hasText(bearerTokenError.getScope())) {
+                    parameters.put("scope", bearerTokenError.getScope());
+                }
+            }
+        }
+        return parameters;
+    }
+
+    private static void respond(HttpServletResponse response, HttpStatus status, Map<String, String> parameters, String errors) throws IOException {
+        String wwwAuthenticate = computeWWWAuthenticateHeaderValue(parameters);
+        response.setStatus(status.value());
+        response.addHeader(HttpHeaders.WWW_AUTHENTICATE, wwwAuthenticate);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        String responseBody = String.format("{\"errors\":\"%s\"}", errors);
+        response.getWriter().write(responseBody);
+    }
+
+    private static String computeWWWAuthenticateHeaderValue(Map<String, String> parameters) {
+        StringBuilder wwwAuthenticate = new StringBuilder();
+        wwwAuthenticate.append("Bearer");
+        if (!parameters.isEmpty()) {
+            wwwAuthenticate.append(" ");
+            int i = 0;
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                wwwAuthenticate.append(entry.getKey()).append("=\"").append(entry.getValue()).append("\"");
+                if (i != parameters.size() - 1) {
+                    wwwAuthenticate.append(", ");
+                }
+                i++;
+            }
+        }
+        return wwwAuthenticate.toString();
+    }
+
+    /**
+     * Collect error details from the provided parameters and format according to RFC
+     * 6750, specifically {@code error}, {@code error_description}, {@code error_uri}, and
+     * {@code scope}.
+     *
+     * @param request               that resulted in an <code>AccessDeniedException</code>
+     * @param response              so that the user agent can be advised of the failure
+     * @param accessDeniedException that caused the invocation
+     */
+    @Override
+    @ExceptionHandler(AccessDeniedException.class)
+    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) {
+        Map<String, String> parameters = createAccessDeniedParameters(request);
+        String wwwAuthenticate = computeWWWAuthenticateHeaderValue(parameters);
+        response.addHeader(HttpHeaders.WWW_AUTHENTICATE, wwwAuthenticate);
+        response.setStatus(HttpStatus.FORBIDDEN.value());
+    }
+
+    private Map<String, String> createAccessDeniedParameters(HttpServletRequest request) {
+        Map<String, String> parameters = new LinkedHashMap<>();
+        if (this.realmName != null) {
+            parameters.put("realm", this.realmName);
+        }
+        if (request.getUserPrincipal() instanceof AbstractOAuth2TokenAuthenticationToken) {
+            parameters.put("error", BearerTokenErrorCodes.INSUFFICIENT_SCOPE);
+            parameters.put("error_description", "The request requires higher privileges than provided by the access token.");
+            parameters.put("error_uri", "https://tools.ietf.org/html/rfc6750#section-3.1");
+        }
+        return parameters;
     }
 }
