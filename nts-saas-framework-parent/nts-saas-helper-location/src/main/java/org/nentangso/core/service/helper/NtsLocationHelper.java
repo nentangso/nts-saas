@@ -6,6 +6,7 @@ import org.nentangso.core.service.provider.NtsLocationProviderFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.Min;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -44,5 +45,9 @@ public class NtsLocationHelper {
 
     public boolean isGrantedAnyLocations() {
         return locationProvider.isGrantedAnyLocations();
+    }
+
+    public boolean hasGrantedLocation(@Min(1) Integer id) {
+        return locationProvider.hasGrantedLocation(id);
     }
 }

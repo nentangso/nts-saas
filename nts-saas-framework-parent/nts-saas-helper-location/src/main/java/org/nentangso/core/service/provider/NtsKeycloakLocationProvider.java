@@ -8,11 +8,16 @@ import org.nentangso.core.service.dto.LocationDTO;
 import org.nentangso.core.service.errors.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.Min;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,6 +31,9 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
     private static final Logger log = LoggerFactory.getLogger(NtsKeycloakLocationProvider.class);
 
     public static final String PROVIDER_NAME = "keycloak";
+
+    @Value("${nts.helper.location.claim:}")
+    private String claim;
 
     private final NtsKeycloakLocationProperties keycloakLocationProperties;
 
@@ -97,9 +105,37 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
 
     @Override
     public boolean isGrantedAnyLocations() {
-//        SecurityContext securityContext = SecurityContextHolder.getContext();
-        // bit số 0 -> all locations
-        // user_attribute uni_granted_any_location=true
-        return true;
+        Jwt principal = getPrincipal();
+        if (!principal.hasClaim(claim)) {
+            return  false;
+        }
+        String locationString = principal.getClaimAsString(claim);
+        BitSet byteLocations = getByteLocations(locationString);
+        return byteLocations.get(0);
+    }
+
+    @Override
+    public boolean hasGrantedLocation(Integer id) {
+        Jwt principal = getPrincipal();
+        if (!principal.hasClaim(claim)) {
+            return  false;
+        }
+        String locationString = principal.getClaimAsString(claim);
+        BitSet byteLocations = getByteLocations(locationString);
+        if (id > byteLocations.length() - 1) {
+            return false;
+        }
+        return byteLocations.get(id);
+    }
+
+
+    private Jwt getPrincipal() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        return (Jwt) securityContext.getAuthentication().getPrincipal();
+    }
+
+    private BitSet getByteLocations(String locationString) {
+        byte[] bytes = Base64.getDecoder().decode(locationString);
+        return BitSet.valueOf(bytes);
     }
 }
