@@ -109,6 +109,16 @@
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
+                <artifactId>nts-saas-helper-location</artifactId>
+                <version>1.1.5-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nentangso</groupId>
+                <artifactId>nts-saas-helper-location-webflux</artifactId>
+                <version>1.1.5-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-helper-note</artifactId>
                 <version>1.1.5-SNAPSHOT</version>
             </dependency>

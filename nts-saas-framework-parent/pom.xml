@@ -79,6 +79,8 @@
         <module>nts-saas-security-oauth2-webflux</module>
         <module>nts-saas-security-user</module>
         <module>nts-saas-security-user-webflux</module>
+        <module>nts-saas-helper-location</module>
+        <module>nts-saas-helper-location-webflux</module>
         <module>nts-saas-helper-note</module>
         <module>nts-saas-helper-tags</module>
         <module>nts-saas-helper-option</module>
