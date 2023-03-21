@@ -5,14 +5,14 @@
     <parent>
         <groupId>org.nentangso</groupId>
         <artifactId>nts-saas-dependencies</artifactId>
-        <version>1.1.6-SNAPSHOT</version>
+        <version>1.1.5-SNAPSHOT</version>
         <relativePath>../nts-saas-dependencies/pom.xml</relativePath>
     </parent>
 
-    <artifactId>nts-saas-starter-web</artifactId>
+    <artifactId>nts-saas-helper-location-webflux</artifactId>
     <packaging>jar</packaging>
-    <name>SaaS Starter Web power by nentangso.org</name>
-    <description>SaaS Starter Web power by nentangso.org</description>
+    <name>SaaS Helper Location WebFlux power by nentangso.org</name>
+    <description>SaaS Helper Location power by nentangso.org</description>
     <url>https://github.com/nentangso/nts-saas</url>
 
     <licenses>
@@ -41,64 +41,52 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-core</artifactId>
+            <groupId>tech.jhipster</groupId>
+            <artifactId>jhipster-framework</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-webmvc</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-r2dbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-utils</artifactId>
+            <artifactId>nts-saas-security-oauth2-webflux</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-annotations</artifactId>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-webflux-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.nentangso</groupId>
             <artifactId>nts-saas-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-security-oauth2</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-security-user</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-helper</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-helper-location</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-helper-note</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-helper-tags</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-helper-option</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-helper-outbox-event</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-web-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-web-metafield</artifactId>
         </dependency>
     </dependencies>
 </project>
