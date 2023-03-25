@@ -1,7 +1,5 @@
 package org.nentangso.core.service.dto;
 
-import org.nentangso.core.domain.NtsUserEntity;
-
 import java.io.Serializable;
 
 /**
@@ -17,12 +15,6 @@ public class NtsUserDTO implements Serializable {
 
     public NtsUserDTO() {
         // Empty constructor needed for Jackson.
-    }
-
-    public NtsUserDTO(NtsUserEntity user) {
-        this.id = user.getId();
-        // Customize it here if you need, or not, firstName/lastName/etc
-        this.login = user.getLogin();
     }
 
     public String getId() {

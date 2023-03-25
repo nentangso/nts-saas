@@ -1,8 +1,6 @@
 package org.nentangso.core.service.dto;
 
 import org.nentangso.core.config.NtsConstants;
-import org.nentangso.core.domain.NtsAuthority;
-import org.nentangso.core.domain.NtsUserEntity;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -57,22 +55,6 @@ public class NtsAdminUserDTO implements Serializable {
 
     public NtsAdminUserDTO() {
         // Empty constructor needed for Jackson.
-    }
-
-    public NtsAdminUserDTO(NtsUserEntity user) {
-        this.id = user.getId();
-        this.login = user.getLogin();
-        this.firstName = user.getFirstName();
-        this.lastName = user.getLastName();
-        this.email = user.getEmail();
-        this.activated = user.isActivated();
-        this.imageUrl = user.getImageUrl();
-        this.langKey = user.getLangKey();
-        this.createdBy = user.getCreatedBy();
-        this.createdAt = user.getCreatedAt();
-        this.updatedBy = user.getUpdatedBy();
-        this.updatedAt = user.getUpdatedAt();
-        this.authorities = user.getAuthorities().stream().map(NtsAuthority::getName).collect(Collectors.toSet());
     }
 
     public String getId() {
