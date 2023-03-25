@@ -60,6 +60,10 @@
         </dependency>
         <dependency>
             <groupId>org.nentangso</groupId>
+            <artifactId>nts-saas-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.nentangso</groupId>
             <artifactId>nts-saas-data-jpa</artifactId>
         </dependency>
         <dependency>

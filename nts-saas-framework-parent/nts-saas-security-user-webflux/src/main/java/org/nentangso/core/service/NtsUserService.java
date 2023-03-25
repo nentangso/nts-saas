@@ -8,6 +8,7 @@ import org.nentangso.core.repository.NtsUserRepository;
 import org.nentangso.core.security.SecurityUtils;
 import org.nentangso.core.service.dto.NtsAdminUserDTO;
 import org.nentangso.core.service.dto.NtsUserDTO;
+import org.nentangso.core.service.mapper.NtsUserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -40,9 +41,12 @@ public class NtsUserService {
 
     private final NtsAuthorityRepository authorityRepository;
 
-    public NtsUserService(NtsUserRepository userRepository, NtsAuthorityRepository authorityRepository) {
+    private final NtsUserMapper userMapper;
+
+    public NtsUserService(NtsUserRepository userRepository, NtsAuthorityRepository authorityRepository, NtsUserMapper userMapper) {
         this.userRepository = userRepository;
         this.authorityRepository = authorityRepository;
+        this.userMapper = userMapper;
     }
 
     /**
@@ -108,12 +112,14 @@ public class NtsUserService {
 
     @Transactional(readOnly = true)
     public Flux<NtsAdminUserDTO> getAllManagedUsers(Pageable pageable) {
-        return userRepository.findAllWithAuthorities(pageable).map(NtsAdminUserDTO::new);
+        return userRepository.findAllWithAuthorities(pageable)
+            .map(userMapper::userToAdminUserDTO);
     }
 
     @Transactional(readOnly = true)
     public Flux<NtsUserDTO> getAllPublicUsers(Pageable pageable) {
-        return userRepository.findAllByIdNotNullAndActivatedIsTrue(pageable).map(NtsUserDTO::new);
+        return userRepository.findAllByIdNotNullAndActivatedIsTrue(pageable)
+            .map(userMapper::userToUserDTO);
     }
 
     @Transactional(readOnly = true)
@@ -213,7 +219,8 @@ public class NtsUserService {
                 .collect(Collectors.toSet())
         );
 
-        return syncUserWithIdP(attributes, user).flatMap(u -> Mono.just(new NtsAdminUserDTO(u)));
+        return syncUserWithIdP(attributes, user)
+            .flatMap(u -> Mono.just(userMapper.userToAdminUserDTO(user)));
     }
 
     private static NtsUserEntity getUser(Map<String, Object> details) {
