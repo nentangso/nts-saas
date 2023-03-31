@@ -32,13 +32,13 @@ public interface NtsUserRepository extends R2dbcRepository<NtsUserEntity, String
 
     Mono<Long> count();
 
-    @Query("INSERT INTO nts_user_authority VALUES(:userId, :authority)")
+    @Query("INSERT INTO nts_user_authorities VALUES(:userId, :authority)")
     Mono<Void> saveUserAuthority(String userId, String authority);
 
-    @Query("DELETE FROM nts_user_authority")
+    @Query("DELETE FROM nts_user_authorities")
     Mono<Void> deleteAllUserAuthorities();
 
-    @Query("DELETE FROM nts_user_authority WHERE user_id = :userId")
+    @Query("DELETE FROM nts_user_authorities WHERE user_id = :userId")
     Mono<Void> deleteUserAuthorities(String userId);
 }
 
@@ -77,7 +77,7 @@ class NtsUserRepositoryInternalImpl implements NtsUserRepositoryInternal {
         long size = pageable.getPageSize();
 
         return db
-            .sql("SELECT * FROM nts_user u LEFT JOIN nts_user_authority ua ON u.id=ua.user_id")
+            .sql("SELECT * FROM nts_user u LEFT JOIN nts_user_authorities ua ON u.id=ua.user_id")
             .map((row, metadata) ->
                 Tuples.of(
                     r2dbcConverter.read(NtsUserEntity.class, row, metadata),
@@ -103,7 +103,7 @@ class NtsUserRepositoryInternalImpl implements NtsUserRepositoryInternal {
 
     private Mono<NtsUserEntity> findOneWithAuthoritiesBy(String fieldName, Object fieldValue) {
         return db
-            .sql("SELECT * FROM nts_user u LEFT JOIN nts_user_authority ua ON u.id=ua.user_id WHERE u." + fieldName + " = :" + fieldName)
+            .sql("SELECT * FROM nts_user u LEFT JOIN nts_user_authorities ua ON u.id=ua.user_id WHERE u." + fieldName + " = :" + fieldName)
             .bind(fieldName, fieldValue)
             .map((row, metadata) ->
                 Tuples.of(
