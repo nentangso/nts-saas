@@ -31,6 +31,9 @@ public class NtsUserMapper {
         NtsUserDTO userDTO = new NtsUserDTO();
         userDTO.setId(user.getId());
         userDTO.setLogin(user.getLogin());
+        userDTO.setFirstName(user.getFirstName());
+        userDTO.setLastName(user.getLastName());
+        userDTO.setActivated(user.isActivated());
         return userDTO;
     }
 
