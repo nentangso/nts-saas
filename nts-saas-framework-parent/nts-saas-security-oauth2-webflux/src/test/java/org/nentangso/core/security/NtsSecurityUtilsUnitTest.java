@@ -16,21 +16,21 @@ import java.util.Collection;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Test class for the {@link SecurityUtils} utility class.
+ * Test class for the {@link NtsSecurityUtils} utility class.
  */
-class SecurityUtilsUnitTest {
+class NtsSecurityUtilsUnitTest {
 
     @BeforeEach
     @AfterEach
     void cleanup() {
         SecurityContextHolder.clearContext();
-        NtsSecurityHelper securityHelper = new NtsSecurityHelper("roles", "ROLE_");
-        securityHelper.afterPropertiesSet();
+        NtsSecurityUtils securityUtils = new NtsSecurityUtils("roles", "ROLE_");
+        securityUtils.afterPropertiesSet();
     }
 
     @Test
     void testgetCurrentUserLogin() {
-        String login = SecurityUtils
+        String login = NtsSecurityUtils
             .getCurrentUserLogin()
             .contextWrite(ReactiveSecurityContextHolder.withAuthentication(new UsernamePasswordAuthenticationToken("admin", "admin")))
             .block();
@@ -39,7 +39,7 @@ class SecurityUtilsUnitTest {
 
     @Test
     void testIsAuthenticated() {
-        Boolean isAuthenticated = SecurityUtils
+        Boolean isAuthenticated = NtsSecurityUtils
             .isAuthenticated()
             .contextWrite(ReactiveSecurityContextHolder.withAuthentication(new UsernamePasswordAuthenticationToken("admin", "admin")))
             .block();
@@ -50,7 +50,7 @@ class SecurityUtilsUnitTest {
     void testAnonymousIsNotAuthenticated() {
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority(NtsAuthoritiesConstants.ANONYMOUS));
-        Boolean isAuthenticated = SecurityUtils
+        Boolean isAuthenticated = NtsSecurityUtils
             .isAuthenticated()
             .contextWrite(
                 ReactiveSecurityContextHolder.withAuthentication(new UsernamePasswordAuthenticationToken("admin", "admin", authorities))
@@ -66,14 +66,14 @@ class SecurityUtilsUnitTest {
         Context context = ReactiveSecurityContextHolder.withAuthentication(
             new UsernamePasswordAuthenticationToken("admin", "admin", authorities)
         );
-        Boolean hasCurrentUserThisAuthority = SecurityUtils
+        Boolean hasCurrentUserThisAuthority = NtsSecurityUtils
             .hasCurrentUserAnyOfAuthorities(NtsAuthoritiesConstants.USER, NtsAuthoritiesConstants.ADMIN)
             .contextWrite(context)
             .block();
         assertThat(hasCurrentUserThisAuthority).isTrue();
 
         hasCurrentUserThisAuthority =
-            SecurityUtils
+            NtsSecurityUtils
                 .hasCurrentUserAnyOfAuthorities(NtsAuthoritiesConstants.ANONYMOUS, NtsAuthoritiesConstants.ADMIN)
                 .contextWrite(context)
                 .block();
@@ -87,14 +87,14 @@ class SecurityUtilsUnitTest {
         Context context = ReactiveSecurityContextHolder.withAuthentication(
             new UsernamePasswordAuthenticationToken("admin", "admin", authorities)
         );
-        Boolean hasCurrentUserThisAuthority = SecurityUtils
+        Boolean hasCurrentUserThisAuthority = NtsSecurityUtils
             .hasCurrentUserNoneOfAuthorities(NtsAuthoritiesConstants.USER, NtsAuthoritiesConstants.ADMIN)
             .contextWrite(context)
             .block();
         assertThat(hasCurrentUserThisAuthority).isFalse();
 
         hasCurrentUserThisAuthority =
-            SecurityUtils
+            NtsSecurityUtils
                 .hasCurrentUserNoneOfAuthorities(NtsAuthoritiesConstants.ANONYMOUS, NtsAuthoritiesConstants.ADMIN)
                 .contextWrite(context)
                 .block();
@@ -108,13 +108,13 @@ class SecurityUtilsUnitTest {
         Context context = ReactiveSecurityContextHolder.withAuthentication(
             new UsernamePasswordAuthenticationToken("admin", "admin", authorities)
         );
-        Boolean hasCurrentUserThisAuthority = SecurityUtils
+        Boolean hasCurrentUserThisAuthority = NtsSecurityUtils
             .hasCurrentUserThisAuthority(NtsAuthoritiesConstants.USER)
             .contextWrite(context)
             .block();
         assertThat(hasCurrentUserThisAuthority).isTrue();
 
-        hasCurrentUserThisAuthority = SecurityUtils.hasCurrentUserThisAuthority(NtsAuthoritiesConstants.ADMIN).contextWrite(context).block();
+        hasCurrentUserThisAuthority = NtsSecurityUtils.hasCurrentUserThisAuthority(NtsAuthoritiesConstants.ADMIN).contextWrite(context).block();
         assertThat(hasCurrentUserThisAuthority).isFalse();
     }
 }

@@ -18,6 +18,6 @@ public class NtsSpringSecurityAuditorAware implements AuditorAware<String> {
 
     @Override
     public Optional<String> getCurrentAuditor() {
-        return Optional.of(SecurityUtils.getCurrentUserLogin().orElse(NtsConstants.SYSTEM));
+        return Optional.of(NtsSecurityUtils.getCurrentUserLogin().orElse(NtsConstants.SYSTEM));
     }
 }
