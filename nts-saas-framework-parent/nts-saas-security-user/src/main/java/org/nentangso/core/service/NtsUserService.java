@@ -5,7 +5,7 @@ import org.nentangso.core.domain.NtsAuthority;
 import org.nentangso.core.domain.NtsUserEntity;
 import org.nentangso.core.repository.NtsAuthorityRepository;
 import org.nentangso.core.repository.NtsUserRepository;
-import org.nentangso.core.security.SecurityUtils;
+import org.nentangso.core.security.NtsSecurityUtils;
 import org.nentangso.core.service.dto.NtsAdminUserDTO;
 import org.nentangso.core.service.dto.NtsUserDTO;
 import org.nentangso.core.service.mapper.NtsUserMapper;
@@ -61,7 +61,7 @@ public class NtsUserService {
      * @param imageUrl  image URL of user.
      */
     public void updateUser(String firstName, String lastName, String email, String langKey, String imageUrl) {
-        SecurityUtils
+        NtsSecurityUtils
             .getCurrentUserLogin()
             .flatMap(userRepository::findOneByLogin)
             .ifPresent(user -> {

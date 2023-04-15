@@ -1,5 +1,6 @@
 package org.nentangso.core.security;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -17,20 +18,23 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Helper class for Spring Security.
+ * Utility class for Spring Security.
  */
 @Component
-public class NtsSecurityHelper implements InitializingBean {
+public final class NtsSecurityUtils implements InitializingBean {
 
     private final String rolesClaim;
     private final String rolePrefix;
+    private final boolean reverseOrderOfDisplayName;
 
-    public NtsSecurityHelper(
+    public NtsSecurityUtils(
         @Value("${nts.security.oauth2.client.configuration.roles-claim:roles}") String rolesClaim,
-        @Value("${nts.security.oauth2.client.configuration.role-prefix:ROLE_}") String rolePrefix
+        @Value("${nts.security.oauth2.client.configuration.role-prefix:ROLE_}") String rolePrefix,
+        @Value("${nts.security.oauth2.client.configuration.reverse-order-of-display-name:true}") boolean reverseOrderOfDisplayName
     ) {
         this.rolesClaim = rolesClaim;
         this.rolePrefix = rolePrefix;
+        this.reverseOrderOfDisplayName = reverseOrderOfDisplayName;
     }
 
     /**
@@ -38,12 +42,12 @@ public class NtsSecurityHelper implements InitializingBean {
      *
      * @return the login of the current user.
      */
-    public Optional<String> getCurrentUserLogin() {
+    public static Optional<String> getCurrentUserLogin() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         return Optional.ofNullable(extractPrincipal(securityContext.getAuthentication()));
     }
 
-    private String extractPrincipal(Authentication authentication) {
+    private static String extractPrincipal(Authentication authentication) {
         if (authentication == null) {
             return null;
         } else if (authentication.getPrincipal() instanceof UserDetails) {
@@ -63,11 +67,51 @@ public class NtsSecurityHelper implements InitializingBean {
     }
 
     /**
+     * Get the display name of the current user.
+     *
+     * @return the display name of the current user.
+     */
+    public static Optional<String> getCurrentUserDisplayName() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        return Optional.ofNullable(extractDisplayName(securityContext.getAuthentication()));
+    }
+
+    private static String extractDisplayName(Authentication authentication) {
+        String firstName = null;
+        String lastName = null;
+        if (authentication == null) {
+            return null;
+        } else if (authentication.getPrincipal() instanceof UserDetails) {
+            UserDetails springSecurityUser = (UserDetails) authentication.getPrincipal();
+            firstName = springSecurityUser.getUsername();
+        } else if (authentication instanceof JwtAuthenticationToken) {
+            firstName = (String) ((JwtAuthenticationToken) authentication).getToken().getClaims().get("given_name");
+            lastName = (String) ((JwtAuthenticationToken) authentication).getToken().getClaims().get("family_name");
+        } else if (authentication.getPrincipal() instanceof DefaultOidcUser) {
+            Map<String, Object> attributes = ((DefaultOidcUser) authentication.getPrincipal()).getAttributes();
+            if (attributes.containsKey("given_name")) {
+                firstName = (String) attributes.get("given_name");
+            }
+            if (attributes.containsKey("family_name")) {
+                lastName = (String) attributes.get("family_name");
+            }
+        } else if (authentication.getPrincipal() instanceof String) {
+            firstName = (String) authentication.getPrincipal();
+        }
+        String displayName = Stream.of(firstName, lastName)
+            .sorted(instance.reverseOrderOfDisplayName ? Comparator.reverseOrder() : Comparator.naturalOrder())
+            .map(StringUtils::trimToNull)
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining(" "));
+        return StringUtils.trimToNull(displayName);
+    }
+
+    /**
      * Check if a user is authenticated.
      *
      * @return true if the user is authenticated, false otherwise.
      */
-    public boolean isAuthenticated() {
+    public static boolean isAuthenticated() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authentication != null && getAuthorities(authentication).noneMatch(NtsAuthoritiesConstants.ANONYMOUS::equals);
     }
@@ -78,7 +122,7 @@ public class NtsSecurityHelper implements InitializingBean {
      * @param authorities the authorities to check.
      * @return true if the current user has any of the authorities, false otherwise.
      */
-    public boolean hasCurrentUserAnyOfAuthorities(String... authorities) {
+    public static boolean hasCurrentUserAnyOfAuthorities(String... authorities) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return (
             authentication != null && getAuthorities(authentication).anyMatch(authority -> Arrays.asList(authorities).contains(authority))
@@ -91,7 +135,7 @@ public class NtsSecurityHelper implements InitializingBean {
      * @param authorities the authorities to check.
      * @return true if the current user has none of the authorities, false otherwise.
      */
-    public boolean hasCurrentUserNoneOfAuthorities(String... authorities) {
+    public static boolean hasCurrentUserNoneOfAuthorities(String... authorities) {
         return !hasCurrentUserAnyOfAuthorities(authorities);
     }
 
@@ -101,44 +145,40 @@ public class NtsSecurityHelper implements InitializingBean {
      * @param authority the authority to check.
      * @return true if the current user has the authority, false otherwise.
      */
-    public boolean hasCurrentUserThisAuthority(String authority) {
+    public static boolean hasCurrentUserThisAuthority(String authority) {
         return hasCurrentUserAnyOfAuthorities(authority);
     }
 
-    private Stream<String> getAuthorities(Authentication authentication) {
+    private static Stream<String> getAuthorities(Authentication authentication) {
         Collection<? extends GrantedAuthority> authorities = authentication instanceof JwtAuthenticationToken
             ? extractAuthorityFromClaims(((JwtAuthenticationToken) authentication).getToken().getClaims())
             : authentication.getAuthorities();
         return authorities.stream().map(GrantedAuthority::getAuthority);
     }
 
-    public List<GrantedAuthority> extractAuthorityFromClaims(Map<String, Object> claims) {
+    public static List<GrantedAuthority> extractAuthorityFromClaims(Map<String, Object> claims) {
         return mapRolesToGrantedAuthorities(getRolesFromClaims(claims));
     }
 
     @SuppressWarnings("unchecked")
-    private Collection<String> getRolesFromClaims(Map<String, Object> claims) {
+    private static Collection<String> getRolesFromClaims(Map<String, Object> claims) {
         return (Collection<String>) claims.getOrDefault(
-            rolesClaim,
+            instance.rolesClaim,
             new ArrayList<>()
         );
     }
 
-    private List<GrantedAuthority> mapRolesToGrantedAuthorities(Collection<String> roles) {
+    private static List<GrantedAuthority> mapRolesToGrantedAuthorities(Collection<String> roles) {
         return roles.stream()
-            .filter(role -> role.startsWith(rolePrefix))
+            .filter(role -> role.startsWith(instance.rolePrefix))
             .map(SimpleGrantedAuthority::new)
             .collect(Collectors.toList());
     }
 
-    private static NtsSecurityHelper instance;
+    private static NtsSecurityUtils instance;
 
     @Override
     public void afterPropertiesSet() {
         instance = this;
-    }
-
-    public static NtsSecurityHelper getInstance() {
-        return instance;
     }
 }

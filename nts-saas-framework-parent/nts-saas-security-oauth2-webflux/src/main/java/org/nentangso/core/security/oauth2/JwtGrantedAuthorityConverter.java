@@ -2,7 +2,7 @@ package org.nentangso.core.security.oauth2;
 
 import java.util.Collection;
 
-import org.nentangso.core.security.SecurityUtils;
+import org.nentangso.core.security.NtsSecurityUtils;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -17,6 +17,6 @@ public class JwtGrantedAuthorityConverter implements Converter<Jwt, Collection<G
 
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
-        return SecurityUtils.extractAuthorityFromClaims(jwt.getClaims());
+        return NtsSecurityUtils.extractAuthorityFromClaims(jwt.getClaims());
     }
 }

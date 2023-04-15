@@ -5,7 +5,7 @@ import org.nentangso.core.domain.NtsAuthority;
 import org.nentangso.core.domain.NtsUserEntity;
 import org.nentangso.core.repository.NtsAuthorityRepository;
 import org.nentangso.core.repository.NtsUserRepository;
-import org.nentangso.core.security.SecurityUtils;
+import org.nentangso.core.security.NtsSecurityUtils;
 import org.nentangso.core.service.dto.NtsAdminUserDTO;
 import org.nentangso.core.service.dto.NtsUserDTO;
 import org.nentangso.core.service.mapper.NtsUserMapper;
@@ -61,7 +61,7 @@ public class NtsUserService {
      */
     @Transactional
     public Mono<Void> updateUser(String firstName, String lastName, String email, String langKey, String imageUrl) {
-        return SecurityUtils
+        return NtsSecurityUtils
             .getCurrentUserLogin()
             .flatMap(userRepository::findOneByLogin)
             .flatMap(user -> {
@@ -85,7 +85,7 @@ public class NtsUserService {
 
     @Transactional
     public Mono<NtsUserEntity> saveUser(NtsUserEntity user, boolean forceCreate) {
-        return SecurityUtils
+        return NtsSecurityUtils
             .getCurrentUserLogin()
             .switchIfEmpty(Mono.just(NtsConstants.SYSTEM))
             .flatMap(login -> {

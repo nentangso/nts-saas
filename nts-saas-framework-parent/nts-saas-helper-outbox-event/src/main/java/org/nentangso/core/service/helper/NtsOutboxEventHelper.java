@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.nentangso.core.config.NtsConstants;
 import org.nentangso.core.domain.NtsOutboxEventEntity;
 import org.nentangso.core.repository.NtsOutboxEventRepository;
-import org.nentangso.core.security.SecurityUtils;
+import org.nentangso.core.security.NtsSecurityUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,7 +43,7 @@ public class NtsOutboxEventHelper {
 
     @Transactional
     public void queue(String aggregateType, String aggregateId, String eventType, Object payload, int aggregateVersion) throws IOException {
-        String actor = SecurityUtils.getCurrentUserLogin().orElse(NtsConstants.SYSTEM);
+        String actor = NtsSecurityUtils.getCurrentUserLogin().orElse(NtsConstants.SYSTEM);
         queue(aggregateType, aggregateId, eventType, payload, actor, aggregateVersion, NtsConstants.DEFAULT_BUSINESS_VERSION);
     }
 

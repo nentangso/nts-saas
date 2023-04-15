@@ -20,16 +20,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames.ID_TOKEN;
 
 /**
- * Test class for the {@link SecurityUtils} utility class.
+ * Test class for the {@link NtsSecurityUtils} utility class.
  */
-class SecurityUtilsUnitTest {
+class NtsSecurityUtilsUnitTest {
 
     @BeforeEach
     @AfterEach
     void cleanup() {
         SecurityContextHolder.clearContext();
-        NtsSecurityHelper securityHelper = new NtsSecurityHelper("roles", "ROLE_");
-        securityHelper.afterPropertiesSet();
+        NtsSecurityUtils securityUtils = new NtsSecurityUtils("roles", "ROLE_", true);
+        securityUtils.afterPropertiesSet();
     }
 
     @Test
@@ -37,7 +37,7 @@ class SecurityUtilsUnitTest {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("admin", "admin"));
         SecurityContextHolder.setContext(securityContext);
-        Optional<String> login = SecurityUtils.getCurrentUserLogin();
+        Optional<String> login = NtsSecurityUtils.getCurrentUserLogin();
         assertThat(login).contains("admin");
     }
 
@@ -56,7 +56,7 @@ class SecurityUtilsUnitTest {
         securityContext.setAuthentication(auth2AuthenticationToken);
         SecurityContextHolder.setContext(securityContext);
 
-        Optional<String> login = SecurityUtils.getCurrentUserLogin();
+        Optional<String> login = NtsSecurityUtils.getCurrentUserLogin();
 
         assertThat(login).contains("admin");
     }
@@ -71,7 +71,7 @@ class SecurityUtilsUnitTest {
             new SimpleGrantedAuthority(NtsAuthoritiesConstants.USER)
         );
 
-        List<GrantedAuthority> authorities = SecurityUtils.extractAuthorityFromClaims(claims);
+        List<GrantedAuthority> authorities = NtsSecurityUtils.extractAuthorityFromClaims(claims);
 
         assertThat(authorities).isNotNull().isNotEmpty().hasSize(2).containsAll(expectedAuthorities);
     }
@@ -86,7 +86,7 @@ class SecurityUtilsUnitTest {
             new SimpleGrantedAuthority(NtsAuthoritiesConstants.USER)
         );
 
-        List<GrantedAuthority> authorities = SecurityUtils.extractAuthorityFromClaims(claims);
+        List<GrantedAuthority> authorities = NtsSecurityUtils.extractAuthorityFromClaims(claims);
 
         assertThat(authorities).isNotNull().isNotEmpty().hasSize(2).containsAll(expectedAuthorities);
     }
@@ -96,7 +96,7 @@ class SecurityUtilsUnitTest {
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("admin", "admin"));
         SecurityContextHolder.setContext(securityContext);
-        boolean isAuthenticated = SecurityUtils.isAuthenticated();
+        boolean isAuthenticated = NtsSecurityUtils.isAuthenticated();
         assertThat(isAuthenticated).isTrue();
     }
 
@@ -107,7 +107,7 @@ class SecurityUtilsUnitTest {
         authorities.add(new SimpleGrantedAuthority(NtsAuthoritiesConstants.ANONYMOUS));
         securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("anonymous", "anonymous", authorities));
         SecurityContextHolder.setContext(securityContext);
-        boolean isAuthenticated = SecurityUtils.isAuthenticated();
+        boolean isAuthenticated = NtsSecurityUtils.isAuthenticated();
         assertThat(isAuthenticated).isFalse();
     }
 
@@ -119,8 +119,8 @@ class SecurityUtilsUnitTest {
         securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("user", "user", authorities));
         SecurityContextHolder.setContext(securityContext);
 
-        assertThat(SecurityUtils.hasCurrentUserThisAuthority(NtsAuthoritiesConstants.USER)).isTrue();
-        assertThat(SecurityUtils.hasCurrentUserThisAuthority(NtsAuthoritiesConstants.ADMIN)).isFalse();
+        assertThat(NtsSecurityUtils.hasCurrentUserThisAuthority(NtsAuthoritiesConstants.USER)).isTrue();
+        assertThat(NtsSecurityUtils.hasCurrentUserThisAuthority(NtsAuthoritiesConstants.ADMIN)).isFalse();
     }
 
     @Test
@@ -131,8 +131,8 @@ class SecurityUtilsUnitTest {
         securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("user", "user", authorities));
         SecurityContextHolder.setContext(securityContext);
 
-        assertThat(SecurityUtils.hasCurrentUserAnyOfAuthorities(NtsAuthoritiesConstants.USER, NtsAuthoritiesConstants.ADMIN)).isTrue();
-        assertThat(SecurityUtils.hasCurrentUserAnyOfAuthorities(NtsAuthoritiesConstants.ANONYMOUS, NtsAuthoritiesConstants.ADMIN)).isFalse();
+        assertThat(NtsSecurityUtils.hasCurrentUserAnyOfAuthorities(NtsAuthoritiesConstants.USER, NtsAuthoritiesConstants.ADMIN)).isTrue();
+        assertThat(NtsSecurityUtils.hasCurrentUserAnyOfAuthorities(NtsAuthoritiesConstants.ANONYMOUS, NtsAuthoritiesConstants.ADMIN)).isFalse();
     }
 
     @Test
@@ -143,7 +143,7 @@ class SecurityUtilsUnitTest {
         securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("user", "user", authorities));
         SecurityContextHolder.setContext(securityContext);
 
-        assertThat(SecurityUtils.hasCurrentUserNoneOfAuthorities(NtsAuthoritiesConstants.USER, NtsAuthoritiesConstants.ADMIN)).isFalse();
-        assertThat(SecurityUtils.hasCurrentUserNoneOfAuthorities(NtsAuthoritiesConstants.ANONYMOUS, NtsAuthoritiesConstants.ADMIN)).isTrue();
+        assertThat(NtsSecurityUtils.hasCurrentUserNoneOfAuthorities(NtsAuthoritiesConstants.USER, NtsAuthoritiesConstants.ADMIN)).isFalse();
+        assertThat(NtsSecurityUtils.hasCurrentUserNoneOfAuthorities(NtsAuthoritiesConstants.ANONYMOUS, NtsAuthoritiesConstants.ADMIN)).isTrue();
     }
 }
