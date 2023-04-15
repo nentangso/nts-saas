@@ -28,7 +28,7 @@ class NtsSecurityUtilsUnitTest {
     @AfterEach
     void cleanup() {
         SecurityContextHolder.clearContext();
-        NtsSecurityUtils securityUtils = new NtsSecurityUtils("roles", "ROLE_");
+        NtsSecurityUtils securityUtils = new NtsSecurityUtils("roles", "ROLE_", true);
         securityUtils.afterPropertiesSet();
     }
 

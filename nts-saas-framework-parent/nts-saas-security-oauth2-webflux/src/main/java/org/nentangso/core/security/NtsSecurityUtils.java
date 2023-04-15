@@ -1,5 +1,6 @@
 package org.nentangso.core.security;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -7,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -15,6 +17,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Utility class for Spring Security.
@@ -24,13 +27,16 @@ public final class NtsSecurityUtils implements InitializingBean {
 
     private final String rolesClaim;
     private final String rolePrefix;
+    private final boolean reverseOrderOfDisplayName;
 
     public NtsSecurityUtils(
         @Value("${nts.security.oauth2.client.configuration.roles-claim:roles}") String rolesClaim,
-        @Value("${nts.security.oauth2.client.configuration.role-prefix:ROLE_}") String rolePrefix
+        @Value("${nts.security.oauth2.client.configuration.role-prefix:ROLE_}") String rolePrefix,
+        @Value("${nts.security.oauth2.client.configuration.reverse-order-of-display-name:true}") boolean reverseOrderOfDisplayName
     ) {
         this.rolesClaim = rolesClaim;
         this.rolePrefix = rolePrefix;
+        this.reverseOrderOfDisplayName = reverseOrderOfDisplayName;
     }
 
     /**
@@ -62,6 +68,48 @@ public final class NtsSecurityUtils implements InitializingBean {
             return (String) authentication.getPrincipal();
         }
         return null;
+    }
+
+    /**
+     * Get the display name of the current user.
+     *
+     * @return the display name of the current user.
+     */
+    public static Mono<String> getCurrentUserDisplayName() {
+        return ReactiveSecurityContextHolder
+            .getContext()
+            .map(SecurityContext::getAuthentication)
+            .flatMap(authentication -> Mono.justOrEmpty(extractDisplayName(authentication)));
+    }
+
+    private static String extractDisplayName(Authentication authentication) {
+        String firstName = null;
+        String lastName = null;
+        if (authentication == null) {
+            return null;
+        } else if (authentication.getPrincipal() instanceof UserDetails) {
+            UserDetails springSecurityUser = (UserDetails) authentication.getPrincipal();
+            firstName = springSecurityUser.getUsername();
+        } else if (authentication instanceof JwtAuthenticationToken) {
+            firstName = (String) ((JwtAuthenticationToken) authentication).getToken().getClaims().get("given_name");
+            lastName = (String) ((JwtAuthenticationToken) authentication).getToken().getClaims().get("family_name");
+        } else if (authentication.getPrincipal() instanceof DefaultOidcUser) {
+            Map<String, Object> attributes = ((DefaultOidcUser) authentication.getPrincipal()).getAttributes();
+            if (attributes.containsKey("given_name")) {
+                firstName = (String) attributes.get("given_name");
+            }
+            if (attributes.containsKey("family_name")) {
+                lastName = (String) attributes.get("family_name");
+            }
+        } else if (authentication.getPrincipal() instanceof String) {
+            firstName = (String) authentication.getPrincipal();
+        }
+        String displayName = Stream.of(firstName, lastName)
+            .sorted(instance.reverseOrderOfDisplayName ? Comparator.reverseOrder() : Comparator.naturalOrder())
+            .map(StringUtils::trimToNull)
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining(" "));
+        return StringUtils.trimToNull(displayName);
     }
 
     /**
