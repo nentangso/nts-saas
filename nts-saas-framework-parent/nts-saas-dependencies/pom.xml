@@ -39,7 +39,7 @@
         <!-- Dependency versions -->
         <pushy.version>0.15.1</pushy.version>
         <netty.version>4.1.92.Final</netty.version>
-        <netty-tcnative.version>2.0.59.Final</netty-tcnative.version>
+        <netty-tcnative.version>2.0.60.Final</netty-tcnative.version>
         <jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
         <openapi-generator-maven-plugin.version>5.4.0</openapi-generator-maven-plugin.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
