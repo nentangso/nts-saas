@@ -42,63 +42,7 @@
     <dependencies>
         <dependency>
             <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-utils</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-security-oauth2</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-security-user</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-helper</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-helper-location</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-helper-note</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-helper-tags</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-helper-option</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-helper-outbox-event</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-web-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
             <artifactId>nts-saas-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-web-metafield</artifactId>
         </dependency>
     </dependencies>
 </project>
