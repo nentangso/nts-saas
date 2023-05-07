@@ -42,34 +42,6 @@
     <dependencies>
         <dependency>
             <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-utils</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-security-oauth2-webflux</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-security-user-webflux</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-helper</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
-            <artifactId>nts-saas-web-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.nentangso</groupId>
             <artifactId>nts-saas-webflux</artifactId>
         </dependency>
     </dependencies>

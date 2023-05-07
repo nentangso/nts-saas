@@ -1,6 +1,6 @@
 package org.nentangso.core.web.rest.errors;
 
-import org.nentangso.core.service.errors.FormValidationException;
+import org.nentangso.core.service.errors.NtsValidationException;
 import org.nentangso.core.service.errors.NotFoundException;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.HttpStatus;
@@ -51,7 +51,7 @@ public class ExceptionTranslatorTestController {
 
     @PostMapping(value = "/form-validation", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void formValidation() {
-        throw new FormValidationException("phone", "Phone number is invalid");
+        throw new NtsValidationException("phone", "Phone number is invalid");
     }
 
     @PostMapping("/media-type-not-acceptable")

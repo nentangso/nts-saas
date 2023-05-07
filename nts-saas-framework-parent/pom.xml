@@ -70,26 +70,9 @@
 
     <modules>
         <module>nts-saas-dependencies</module>
-        <module>nts-saas-core</module>
-        <module>nts-saas-annotations</module>
-        <module>nts-saas-utils</module>
-        <module>nts-saas-data-jpa</module>
-        <module>nts-saas-helper</module>
-        <module>nts-saas-security-oauth2</module>
-        <module>nts-saas-security-oauth2-webflux</module>
-        <module>nts-saas-client</module>
-        <module>nts-saas-security-user</module>
-        <module>nts-saas-security-user-webflux</module>
-        <module>nts-saas-helper-location</module>
-        <module>nts-saas-helper-location-webflux</module>
-        <module>nts-saas-helper-note</module>
-        <module>nts-saas-helper-tags</module>
-        <module>nts-saas-helper-option</module>
-        <module>nts-saas-helper-outbox-event</module>
         <module>nts-saas-web-core</module>
         <module>nts-saas-web</module>
         <module>nts-saas-webflux</module>
-        <module>nts-saas-web-metafield</module>
         <module>nts-saas-starter-web</module>
         <module>nts-saas-starter-webflux</module>
     </modules>

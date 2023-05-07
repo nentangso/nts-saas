@@ -1,7 +1,7 @@
 package org.nentangso.core.web.rest.errors;
 
-import org.nentangso.core.service.errors.FormValidationException;
 import org.nentangso.core.service.errors.NotFoundException;
+import org.nentangso.core.service.errors.NtsValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.ConversionNotSupportedException;
@@ -62,7 +62,7 @@ public class NtsExceptionTranslator extends ResponseEntityExceptionHandler imple
         ConcurrencyFailureException.class,
         NotFoundException.class,
         BadRequestAlertException.class,
-        FormValidationException.class,
+        NtsValidationException.class,
     })
     protected Mono<ResponseEntity<Object>> handleNtsException(Exception ex, ServerWebExchange exchange) {
         HttpHeaders headers = new HttpHeaders();
@@ -84,9 +84,9 @@ public class NtsExceptionTranslator extends ResponseEntityExceptionHandler imple
         } else if (ex instanceof BadRequestAlertException) {
             HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
             return handleBadRequestAlert((BadRequestAlertException) ex, headers, status, exchange);
-        } else if (ex instanceof FormValidationException) {
+        } else if (ex instanceof NtsValidationException) {
             HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
-            return handleFormValidation((FormValidationException) ex, headers, status, exchange);
+            return handleFormValidation((NtsValidationException) ex, headers, status, exchange);
         } else {
             // Unknown exception, typically a wrapper with a common MVC exception as cause
             // (since @ExceptionHandler type declarations also match first-level causes):
@@ -134,7 +134,7 @@ public class NtsExceptionTranslator extends ResponseEntityExceptionHandler imple
         return handleExceptionInternal(ex, null, headers, status, exchange);
     }
 
-    private Mono<ResponseEntity<Object>> handleFormValidation(FormValidationException ex, HttpHeaders headers, HttpStatus status, ServerWebExchange exchange) {
+    private Mono<ResponseEntity<Object>> handleFormValidation(NtsValidationException ex, HttpHeaders headers, HttpStatus status, ServerWebExchange exchange) {
 
         return handleExceptionInternal(ex, null, headers, status, exchange);
     }
@@ -168,8 +168,8 @@ public class NtsExceptionTranslator extends ResponseEntityExceptionHandler imple
 
     protected Map<String, List<String>> buildUnprocessableErrors(Exception ex) {
         Map<String, List<String>> errors = Collections.singletonMap(NtsErrorConstants.KEY_BASE, Collections.singletonList(NtsErrorConstants.MESSAGE_UNPROCESSABLE));
-        if (ex instanceof FormValidationException && !((FormValidationException) ex).getErrors().isEmpty()) {
-            errors = ((FormValidationException) ex).getErrors();
+        if (ex instanceof NtsValidationException && !((NtsValidationException) ex).getErrors().isEmpty()) {
+            errors = ((NtsValidationException) ex).getErrors();
         } else if (ex instanceof BadRequestAlertException) {
             errors = Collections.singletonMap(((BadRequestAlertException) ex).getErrorKey(), Collections.singletonList(ex.getMessage()));
         }
