@@ -121,6 +121,11 @@
             <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.zalando</groupId>
+            <artifactId>problem-spring-web</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <!-- Spring Cloud -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
