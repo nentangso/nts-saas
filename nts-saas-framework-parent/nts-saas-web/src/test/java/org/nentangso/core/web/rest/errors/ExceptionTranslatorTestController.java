@@ -1,7 +1,7 @@
 package org.nentangso.core.web.rest.errors;
 
 import org.nentangso.core.service.errors.NtsValidationException;
-import org.nentangso.core.service.errors.NotFoundException;
+import org.nentangso.core.service.errors.NtsNotFoundException;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -41,7 +41,7 @@ public class ExceptionTranslatorTestController {
 
     @GetMapping("/not-found")
     public void notFound() {
-        throw new NotFoundException("test not found!");
+        throw new NtsNotFoundException("test not found!");
     }
 
     @PostMapping("/bad-request-alert")

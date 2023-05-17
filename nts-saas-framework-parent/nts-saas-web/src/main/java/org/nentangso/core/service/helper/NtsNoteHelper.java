@@ -3,7 +3,7 @@ package org.nentangso.core.service.helper;
 import org.apache.commons.lang3.StringUtils;
 import org.nentangso.core.domain.NtsNoteEntity;
 import org.nentangso.core.repository.NtsNoteRepository;
-import org.nentangso.core.service.errors.NotFoundException;
+import org.nentangso.core.service.errors.NtsNotFoundException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -52,7 +52,7 @@ public class NtsNoteHelper {
         }
         NtsNoteEntity noteEntity = new NtsNoteEntity();
         if (Objects.nonNull(id)) {
-            noteEntity = noteRepository.findById(id).orElseThrow(NotFoundException::new);
+            noteEntity = noteRepository.findById(id).orElseThrow(NtsNotFoundException::new);
             if (StringUtils.equals(noteEntity.getNote(), note)) {
                 return Optional.of(noteEntity);
             }

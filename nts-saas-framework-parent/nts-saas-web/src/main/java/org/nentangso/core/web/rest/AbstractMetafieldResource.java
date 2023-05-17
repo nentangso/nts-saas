@@ -3,7 +3,7 @@ package org.nentangso.core.web.rest;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.nentangso.core.domain.NtsMetafieldEntity;
 import org.nentangso.core.service.dto.NtsMetafieldDTO;
-import org.nentangso.core.service.errors.NotFoundException;
+import org.nentangso.core.service.errors.NtsNotFoundException;
 import org.nentangso.core.service.helper.NtsJsonHelper;
 import org.nentangso.core.service.helper.NtsMetafieldHelper;
 import org.nentangso.core.service.mapper.NtsMetafieldMapper;
@@ -59,7 +59,7 @@ public abstract class AbstractMetafieldResource {
     protected ResponseEntity<NtsMetafieldDTO> createMetafield(long ownerId, MetafieldInput metafield) throws URISyntaxException {
         log.debug("REST request to save metafield : {}", metafield);
         if (!existsByOwnerId(ownerId)) {
-            throw new NotFoundException();
+            throw new NtsNotFoundException();
         }
         NtsMetafieldDTO metafieldDTO = metafieldMapper.toDto(metafield, getOwnerResource(), ownerId);
         NtsMetafieldDTO result = metafieldHelper.save(metafieldDTO);
@@ -84,11 +84,11 @@ public abstract class AbstractMetafieldResource {
     protected ResponseEntity<NtsMetafieldDTO> updateMetafield(long ownerId, long id, MetafieldInput metafield, HttpServletRequest request) throws IOException {
         log.debug("REST request to update metafield : {}", metafield);
         if (!existsByOwnerId(ownerId)) {
-            throw new NotFoundException();
+            throw new NtsNotFoundException();
         }
         NtsMetafieldDTO.Builder builder = metafieldHelper.findOne(getOwnerResource(), ownerId, id)
             .map(NtsMetafieldDTO::newBuilder)
-            .orElseThrow(NotFoundException::new);
+            .orElseThrow(NtsNotFoundException::new);
 
         String body = NtsRequestUtils.getBody(request);
         JsonNode node = jsonHelper.getJsonNode(body, null);
@@ -117,7 +117,7 @@ public abstract class AbstractMetafieldResource {
     protected ResponseEntity<List<NtsMetafieldDTO>> getAllMetafields(long ownerId) {
         log.debug("REST request to get metafields");
         if (!existsByOwnerId(ownerId)) {
-            throw new NotFoundException();
+            throw new NtsNotFoundException();
         }
         List<NtsMetafieldDTO> metafields = metafieldHelper.findAllByOwner(getOwnerResource(), ownerId);
         return ResponseEntity.ok(metafields);

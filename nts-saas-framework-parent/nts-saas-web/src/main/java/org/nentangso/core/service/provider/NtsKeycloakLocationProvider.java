@@ -5,7 +5,7 @@ import org.nentangso.core.client.NtsKeycloakClient;
 import org.nentangso.core.client.vm.KeycloakClientRole;
 import org.nentangso.core.config.NtsKeycloakLocationProperties;
 import org.nentangso.core.service.dto.LocationDTO;
-import org.nentangso.core.service.errors.NotFoundException;
+import org.nentangso.core.service.errors.NtsNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -87,7 +87,7 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
         ResponseEntity<KeycloakClientRole> response = keycloakClient.findClientRole(clientId, String.valueOf(id));
         if (!response.getStatusCode().is2xxSuccessful()) {
             log.error("Cannot fetch client role #{} => {}", id, response);
-            throw new NotFoundException(String.format("Cannot fetch client role #%s", id));
+            throw new NtsNotFoundException(String.format("Cannot fetch client role #%s", id));
         }
         return toLocationDTO(response.getBody());
     }

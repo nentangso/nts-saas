@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.nentangso.core.domain.NtsMetafieldEntity;
 import org.nentangso.core.repository.NtsMetafieldRepository;
 import org.nentangso.core.service.dto.NtsMetafieldDTO;
-import org.nentangso.core.service.errors.NotFoundException;
+import org.nentangso.core.service.errors.NtsNotFoundException;
 import org.nentangso.core.service.mapper.NtsMetafieldMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,7 @@ public class NtsMetafieldHelper {
             .ownerId(metafieldDTO.getOwnerId());
         if (metafieldDTO.getId() != null) {
             metafieldEntity = metafieldRepository.findById(metafieldDTO.getId())
-                .orElseThrow(NotFoundException::new);
+                .orElseThrow(NtsNotFoundException::new);
         }
         metafieldEntity.namespace(metafieldDTO.getNamespace())
             .key(metafieldDTO.getKey())
@@ -90,7 +90,7 @@ public class NtsMetafieldHelper {
         NtsMetafieldEntity metafieldEntity = metafieldRepository.findById(id)
             .filter(m -> StringUtils.equalsIgnoreCase(m.getOwnerResource(), ownerResource))
             .filter(m -> Objects.equals(m.getOwnerId(), ownerId))
-            .orElseThrow(NotFoundException::new);
+            .orElseThrow(NtsNotFoundException::new);
         metafieldRepository.delete(metafieldEntity);
     }
 }
