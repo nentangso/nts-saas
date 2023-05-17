@@ -1,139 +1,87 @@
 package org.nentangso.core.service.errors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
-import org.springframework.http.HttpStatus;
-import org.springframework.util.CollectionUtils;
+import org.nentangso.core.web.rest.errors.NtsErrorConstants;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
-import org.springframework.web.client.HttpStatusCodeException;
+import org.zalando.problem.Status;
+import org.zalando.problem.violations.ConstraintViolationProblem;
+import org.zalando.problem.violations.Violation;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toList;
 
 @SuppressWarnings("java:S110") // Inheritance tree of classes should not be too deep
-public class NtsValidationException extends HttpStatusCodeException {
+public class NtsValidationException extends ConstraintViolationProblem {
     private static final long serialVersionUID = 1L;
 
-    protected final Map<String, List<String>> errors;
-
     public NtsValidationException() {
-        super(HttpStatus.UNPROCESSABLE_ENTITY);
-        this.errors = new LinkedHashMap<>();
+        super(Status.UNPROCESSABLE_ENTITY, Collections.emptyList());
     }
 
     public NtsValidationException(Map<String, List<String>> errors) {
-        super(
-            buildMessage(errors),
-            HttpStatus.UNPROCESSABLE_ENTITY,
-            HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase(),
-            null,
-            null,
-            null
+        super(Status.UNPROCESSABLE_ENTITY, createViolations(errors));
+    }
+
+    private static List<Violation> createViolations(Map<String, List<String>> errors) {
+        final List<Violation> violations = new ArrayList<>();
+        Optional.ofNullable(errors).orElseGet(Collections::emptyMap)
+            .forEach((key, messages) -> violations.addAll(createViolations(key, messages)));
+        return violations;
+    }
+
+    private static List<Violation> createViolations(String key, List<String> messages) {
+        return Optional.ofNullable(messages).orElseGet(Collections::emptyList)
+            .stream()
+            .map(message -> createViolation(key, message))
+            .collect(toList());
+    }
+
+    private static Violation createViolation(String key, String message) {
+        return new Violation(
+            Optional.ofNullable(key).orElse(NtsErrorConstants.KEY_BASE),
+            message
         );
-        this.errors = errors;
     }
 
     public NtsValidationException(String key, String message) {
-        super(
-            StringUtils.join(key, ": ", message),
-            HttpStatus.UNPROCESSABLE_ENTITY,
-            HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase(),
-            null,
-            null,
-            null
-        );
-        this.errors = Collections.singletonMap(key, Collections.singletonList(message));
+        super(Status.UNPROCESSABLE_ENTITY, Collections.singletonList(createViolation(key, message)));
     }
 
     public NtsValidationException(BindingResult bindingResult) {
-        super(
-            buildMessage(bindingResult),
-            HttpStatus.UNPROCESSABLE_ENTITY,
-            HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase(),
-            null,
-            null,
-            null
-        );
-        this.errors = buildErrors(bindingResult);
+        super(Status.UNPROCESSABLE_ENTITY, createViolations(bindingResult));
     }
 
-    public Map<String, List<String>> getErrors() {
-        return errors;
-    }
-
-    public boolean hasFieldErrors() {
-        return !this.errors.isEmpty();
-    }
-
-    public void addFieldError(String field, String error) {
-        List<String> messages = this.errors.getOrDefault(field, new ArrayList<>());
-        messages.add(error);
-        this.errors.putIfAbsent(field, messages);
-    }
-
-    public void addFieldErrors(Map<String, List<String>> fieldErrors) {
-        addFieldErrors(fieldErrors, null);
-    }
-
-    public void addFieldErrors(Map<String, List<String>> fieldErrors, String prefix) {
-        if (CollectionUtils.isEmpty(fieldErrors)) return;
-        fieldErrors.forEach((key, newMessages) -> {
-            String fieldName = StringUtils.join(prefix, key);
-            List<String> messages = this.errors.getOrDefault(fieldName, new ArrayList<>());
-            messages.addAll(newMessages);
-            this.errors.putIfAbsent(fieldName, messages);
-        });
-    }
-
-    public static String buildMessage(Map<String, List<String>> fieldErrors) {
-        if (fieldErrors == null || fieldErrors.isEmpty()) {
-            return null;
-        }
-        return fieldErrors.entrySet().stream()
-            .map(entry -> String.format("%s: %s", entry.getKey(), entry.getValue()))
-            .collect(joining(", "));
-    }
-
-    public static String buildMessage(BindingResult bindingResult) {
-        if (bindingResult == null || !bindingResult.hasFieldErrors()) {
-            return null;
-        }
-        return bindingResult.getFieldErrors().stream()
-            .map(fieldError -> String.format("%s: %s", fieldError.getField(), fieldError.getDefaultMessage()))
-            .collect(joining(", "));
-    }
-
-    public static Map<String, List<String>> buildErrors(BindingResult bindingResult) {
+    private static List<Violation> createViolations(BindingResult bindingResult) {
         if (bindingResult == null || !bindingResult.hasErrors()) {
-            return Collections.emptyMap();
+            return Collections.emptyList();
         }
-        final Map<String, List<String>> errors = new LinkedHashMap<>();
-        if (!CollectionUtils.isEmpty(bindingResult.getGlobalErrors())) {
-            var baseErrors = bindingResult.getGlobalErrors()
-                .stream()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .collect(Collectors.toList());
-            errors.put("base", baseErrors);
-        }
-        if (!CollectionUtils.isEmpty(bindingResult.getFieldErrors())) {
-            var fieldErrors = bindingResult.getFieldErrors()
-                .stream()
-                .collect(
-                    groupingBy(
-                        FieldError::getField,
-                        collectingAndThen(
-                            toList(),
-                            items -> items.stream()
-                                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                                .collect(toList())
-                        )
-                    )
-                );
-            errors.putAll(fieldErrors);
-        }
-        return errors;
+        final List<Violation> violations = new ArrayList<>();
+        bindingResult.getGlobalErrors().forEach(objectError -> violations.add(createViolation(
+            NtsErrorConstants.KEY_BASE,
+            objectError.getDefaultMessage()
+        )));
+        bindingResult.getFieldErrors().forEach(fieldError -> violations.add(createViolation(
+            fieldError.getField(),
+            fieldError.getDefaultMessage()
+        )));
+        return violations;
+    }
+
+    public void addViolation(String key, String message) {
+        getViolations().add(createViolation(key, message));
+    }
+
+    public void addViolations(Map<String, List<String>> errors) {
+        addViolations(errors, null);
+    }
+
+    public void addViolations(Map<String, List<String>> errors, String prefix) {
+        Optional.ofNullable(errors).orElseGet(Collections::emptyMap)
+            .forEach((key, messages) -> {
+                String fieldName = StringUtils.join(prefix, key);
+                List<Violation> violations = createViolations(fieldName, messages);
+                getViolations().addAll(violations);
+            });
     }
 }

@@ -3,7 +3,7 @@ package org.nentangso.core.service.helper;
 import org.apache.commons.lang3.StringUtils;
 import org.nentangso.core.domain.NtsTagsEntity;
 import org.nentangso.core.repository.NtsTagsRepository;
-import org.nentangso.core.service.errors.NotFoundException;
+import org.nentangso.core.service.errors.NtsNotFoundException;
 import org.nentangso.core.service.utils.NtsTextUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -77,7 +77,7 @@ public class NtsTagsHelper {
         }
         NtsTagsEntity tagsEntity = new NtsTagsEntity();
         if (Objects.nonNull(id)) {
-            tagsEntity = tagsRepository.findById(id).orElseThrow(NotFoundException::new);
+            tagsEntity = tagsRepository.findById(id).orElseThrow(NtsNotFoundException::new);
             if (StringUtils.equals(tagsEntity.getTags(), joinedTags)) {
                 return Optional.of(tagsEntity);
             }
