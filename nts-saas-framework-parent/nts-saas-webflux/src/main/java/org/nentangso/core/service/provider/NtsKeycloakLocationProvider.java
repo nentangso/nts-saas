@@ -143,16 +143,15 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
                 if (!keycloakLocationProperties.getCustomAttributeKeys().contains(key)) {
                     return;
                 }
-                Optional.ofNullable(values)
-                    .flatMap(m -> m.stream().findFirst())
-                    .filter(StringUtils::isNotEmpty)
-                    .ifPresent(value -> {
-                        NtsDefaultAttributeDTO attribute = NtsAttributeDTO.newBuilder()
-                            .key(key)
-                            .value(value)
-                            .build();
-                        attributes.add(attribute);
-                    });
+                if (values == null || values.isEmpty() || StringUtils.isEmpty(values.get(0))) {
+                    return;
+                }
+                String value = values.get(0);
+                NtsDefaultAttributeDTO attribute = NtsAttributeDTO.newBuilder()
+                    .key(key)
+                    .value(value)
+                    .build();
+                attributes.add(attribute);
             });
         return attributes;
     }
@@ -167,9 +166,10 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
             return Optional.empty();
         }
         List<String> values = attributes.get(key);
-        return Optional.ofNullable(values)
-            .flatMap(f -> f.stream().findFirst())
-            .filter(StringUtils::isNotEmpty);
+        if (values == null || values.isEmpty() || StringUtils.isEmpty(values.get(0))) {
+            return Optional.empty();
+        }
+        return Optional.of(values.get(0));
     }
 
     private Optional<Instant> parseInstantAttribute(Map<String, List<String>> attributes, String key) {
