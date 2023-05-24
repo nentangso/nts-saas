@@ -1,6 +1,6 @@
 package org.nentangso.core.service.helper;
 
-import org.nentangso.core.service.dto.LocationDTO;
+import org.nentangso.core.service.dto.NtsLocationDTO;
 import org.nentangso.core.service.provider.NtsLocationProvider;
 import org.nentangso.core.service.provider.NtsLocationProviderFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -28,11 +28,11 @@ public class NtsLocationHelper {
         return locationProvider.findAllIds();
     }
 
-    public Set<LocationDTO> findAll() {
+    public Set<NtsLocationDTO> findAll() {
         return Collections.emptySet();
     }
 
-    public Optional<LocationDTO> findById(Long id) {
+    public Optional<NtsLocationDTO> findById(Long id) {
         return locationProvider.findById(id);
     }
 
