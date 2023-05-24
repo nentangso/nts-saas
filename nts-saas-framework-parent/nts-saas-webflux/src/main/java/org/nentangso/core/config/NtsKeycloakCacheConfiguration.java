@@ -1,5 +1,6 @@
 package org.nentangso.core.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.SimpleType;
 import com.fasterxml.jackson.databind.type.TypeBindings;
@@ -26,7 +27,7 @@ import java.util.Set;
 @Configuration
 public class NtsKeycloakCacheConfiguration {
     @Bean
-    ReactiveRedisOperations<String, Set<NtsDefaultLocationDTO>> ntsLocationsOps(ReactiveRedisConnectionFactory factory) {
+    ReactiveRedisOperations<String, Set<NtsDefaultLocationDTO>> ntsLocationsOps(ReactiveRedisConnectionFactory factory, ObjectMapper objectMapper) {
         CollectionType type = CollectionType.construct(
             Set.class,
             TypeBindings.create(Set.class, SimpleType.constructUnsafe(NtsDefaultLocationDTO.class)),
@@ -35,6 +36,7 @@ public class NtsKeycloakCacheConfiguration {
             SimpleType.constructUnsafe(NtsDefaultLocationDTO.class)
         );
         Jackson2JsonRedisSerializer<Set<NtsDefaultLocationDTO>> serializer = new Jackson2JsonRedisSerializer<>(type);
+        serializer.setObjectMapper(objectMapper);
 
         RedisSerializationContext.RedisSerializationContextBuilder<String, Set<NtsDefaultLocationDTO>> builder = RedisSerializationContext.newSerializationContext(new StringRedisSerializer());
 
