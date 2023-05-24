@@ -4,18 +4,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.nentangso.core.client.NtsKeycloakClient;
 import org.nentangso.core.client.vm.KeycloakClientRole;
 import org.nentangso.core.config.NtsKeycloakLocationProperties;
+import org.nentangso.core.service.dto.NtsAttributeDTO;
+import org.nentangso.core.service.dto.NtsDefaultAttributeDTO;
+import org.nentangso.core.service.dto.NtsDefaultLocationDTO;
 import org.nentangso.core.service.dto.NtsLocationDTO;
-import org.nentangso.core.service.errors.NtsNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.data.redis.core.ReactiveRedisOperations;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.*;
@@ -46,6 +48,7 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
     public static final String ATTRIBUTE_PROVINCE_CODE = "provinceCode";
     public static final String ATTRIBUTE_LOCALIZED_PROVINCE_NAME = "localizedProvinceName";
     public static final String ATTRIBUTE_ZIP = "zip";
+    public static final String ATTRIBUTE_ADDRESS_VERIFIED = "addressVerified";
 
     @Value("${nts.helper.location.claim:}")
     private String claim;
@@ -53,10 +56,12 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
     private final NtsKeycloakLocationProperties keycloakLocationProperties;
 
     private final NtsKeycloakClient keycloakClient;
+    private final ReactiveRedisOperations<String, Set<NtsDefaultLocationDTO>> locationsRedisOps;
 
-    public NtsKeycloakLocationProvider(NtsKeycloakLocationProperties keycloakLocationProperties, NtsKeycloakClient keycloakClient) {
+    public NtsKeycloakLocationProvider(NtsKeycloakLocationProperties keycloakLocationProperties, NtsKeycloakClient keycloakClient, ReactiveRedisOperations<String, Set<NtsDefaultLocationDTO>> locationsRedisOps) {
         this.keycloakLocationProperties = keycloakLocationProperties;
         this.keycloakClient = keycloakClient;
+        this.locationsRedisOps = locationsRedisOps;
         validateKeycloakProperties();
     }
 
@@ -70,47 +75,42 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
     }
 
     @Override
-    public Set<Long> findAllIds() {
-        String clientId = keycloakLocationProperties.getInternalClientId();
-        ResponseEntity<List<KeycloakClientRole>> response = keycloakClient.findClientRoles(clientId, false);
-        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-            log.error("Cannot fetch client roles {}", response);
-            throw new AccessDeniedException("Cannot fetch client roles");
-        }
-        Set<Long> locationIds = toLocationIds(response.getBody());
-        log.debug("Fetch success location_ids {}", locationIds);
-        return locationIds;
+    public Mono<Set<NtsDefaultLocationDTO>> findAll() {
+        final String cacheKey = generateCacheKey("locations");
+        return locationsRedisOps.opsForValue().get(cacheKey)
+            .switchIfEmpty(Mono.defer(() -> {
+                String clientId = keycloakLocationProperties.getInternalClientId();
+                return keycloakClient.findClientRoles(clientId, false)
+                    .map(this::toLocations)
+                    .flatMap(items -> locationsRedisOps.opsForValue().set(cacheKey, items).thenReturn(items));
+            }));
     }
 
-    public Set<Long> toLocationIds(Collection<KeycloakClientRole> clientRoles) {
-        return Optional.ofNullable(clientRoles)
-            .orElseGet(Collections::emptyList)
-            .stream()
-            .map(m -> {
-                try {
-                    return Long.parseUnsignedLong(m.getName());
-                } catch (NumberFormatException ignored) {
-                    return null;
-                }
-            })
-            .filter(Objects::nonNull)
+    private String generateCacheKey(String key) {
+        return keycloakLocationProperties.getCacheKeyPrefix() + key;
+    }
+
+    private Set<NtsDefaultLocationDTO> toLocations(Collection<KeycloakClientRole> clientRoles) {
+        return clientRoles.stream()
+            .map(this::toLocation)
             .collect(Collectors.toSet());
     }
 
     @Override
-    public Optional<NtsLocationDTO> findById(Long id) {
-        String clientId = keycloakLocationProperties.getInternalClientId();
-        ResponseEntity<KeycloakClientRole> response = keycloakClient.findClientRole(clientId, String.valueOf(id));
-        if (!response.getStatusCode().is2xxSuccessful()) {
-            log.error("Cannot fetch client role #{} => {}", id, response);
-            throw new NtsNotFoundException(String.format("Cannot fetch client role #%s", id));
-        }
-        NtsLocationDTO dto = toLocationDTO(response.getBody());
-        return Optional.of(dto);
+    public Mono<Set<Long>> findAllIds() {
+        return findAll()
+            .map(items -> items.stream().map(NtsDefaultLocationDTO::getId).collect(Collectors.toSet()));
     }
 
-    private NtsLocationDTO toLocationDTO(KeycloakClientRole clientRole) {
-        log.debug("toLocationDTO clientRole={}", clientRole);
+    @Override
+    public Mono<NtsLocationDTO> findById(Long id) {
+        String clientId = keycloakLocationProperties.getInternalClientId();
+        return keycloakClient.findClientRole(clientId, String.valueOf(id))
+            .map(this::toLocation);
+    }
+
+    private NtsDefaultLocationDTO toLocation(KeycloakClientRole clientRole) {
+        log.trace("toLocationDTO clientRole={}", clientRole);
         Map<String, List<String>> attributes = clientRole.getAttributes();
         return NtsLocationDTO.newDefaultBuilder()
             .id(Long.parseUnsignedLong(clientRole.getName()))
@@ -126,11 +126,35 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
             .provinceCode(singleAttribute(attributes, ATTRIBUTE_PROVINCE_CODE).orElse(null))
             .localizedProvinceName(singleAttribute(attributes, ATTRIBUTE_LOCALIZED_PROVINCE_NAME).orElse(null))
             .zip(singleAttribute(attributes, ATTRIBUTE_ZIP).orElse(null))
+            .addressVerified(parseBooleanAttribute(attributes, ATTRIBUTE_ADDRESS_VERIFIED).orElse(false))
             .active(parseBooleanAttribute(attributes, ATTRIBUTE_ACTIVE).orElse(false))
             .deactivatedAt(parseInstantAttribute(attributes, ATTRIBUTE_DEACTIVATED_AT).orElse(null))
             .createdAt(parseInstantAttribute(attributes, ATTRIBUTE_CREATED_AT).orElse(null))
             .updatedAt(parseInstantAttribute(attributes, ATTRIBUTE_UPDATED_AT).orElse(null))
+            .customAttributes(toCustomAttributes(attributes))
             .build();
+    }
+
+    private Set<NtsDefaultAttributeDTO> toCustomAttributes(Map<String, List<String>> input) {
+        final Set<NtsDefaultAttributeDTO> attributes = new HashSet<>();
+        Optional.ofNullable(input)
+            .orElseGet(Collections::emptyMap)
+            .forEach((key, values) -> {
+                if (!keycloakLocationProperties.getCustomAttributeKeys().contains(key)) {
+                    return;
+                }
+                Optional.ofNullable(values)
+                    .flatMap(m -> m.stream().findFirst())
+                    .filter(StringUtils::isNotEmpty)
+                    .ifPresent(value -> {
+                        NtsDefaultAttributeDTO attribute = NtsAttributeDTO.newBuilder()
+                            .key(key)
+                            .value(value)
+                            .build();
+                        attributes.add(attribute);
+                    });
+            });
+        return attributes;
     }
 
     private Optional<Boolean> parseBooleanAttribute(Map<String, List<String>> attributes, String key) {

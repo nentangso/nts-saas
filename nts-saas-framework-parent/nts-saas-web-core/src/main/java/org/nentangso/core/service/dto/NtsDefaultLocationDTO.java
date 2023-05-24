@@ -2,12 +2,15 @@ package org.nentangso.core.service.dto;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * A location represents a geographical location where your stores, pop-up stores, headquarters, and warehouses exist.
  * You can use the Location resource to track sales, manage inventory, and configure the tax rates to apply at checkout.
  */
-public class LocationDTO implements Serializable {
+public class NtsDefaultLocationDTO implements NtsLocationDTO, Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -21,7 +24,7 @@ public class LocationDTO implements Serializable {
     /**
      * The address of this location.
      */
-    private LocationAddressDTO address;
+    private NtsDefaultLocationAddressDTO address;
     /**
      * Whether the location address has been verified.
      */
@@ -31,6 +34,10 @@ public class LocationDTO implements Serializable {
      */
     private boolean active;
     /**
+     * The date and time (ISO 8601 format) that the location was deactivated at. For example, 3:30 pm on September 7, 2019 in the time zone of UTC (Universal Time Coordinated) is represented as "2019-09-07T15:50:00Z".
+     */
+    private Instant deactivatedAt;
+    /**
      * The date and time (ISO 8601 format) when the location was created.
      */
     private Instant createdAt;
@@ -38,10 +45,29 @@ public class LocationDTO implements Serializable {
      * The date and time (ISO 8601 format) when the location was last updated.
      */
     private Instant updatedAt;
+
     /**
-     * The date and time (ISO 8601 format) that the location was deactivated at. For example, 3:30 pm on September 7, 2019 in the time zone of UTC (Universal Time Coordinated) is represented as "2019-09-07T15:50:00Z".
+     * The custom information added to the location on behalf of the customer.
      */
-    private Instant deactivatedAt;
+    private Set<NtsDefaultAttributeDTO> customAttributes;
+
+    public NtsDefaultLocationDTO() {
+    }
+
+    public NtsDefaultLocationDTO(NtsLocationDTOBuilder builder) {
+        setId(builder.getId());
+        setName(builder.getName());
+        NtsDefaultLocationAddressDTO address = new NtsDefaultLocationAddressDTO(builder);
+        setAddress(address);
+        setAddressVerified(builder.isAddressVerified());
+        setActive(builder.isActive());
+        setDeactivatedAt(builder.getDeactivatedAt());
+        setCreatedAt(builder.getCreatedAt());
+        setUpdatedAt(builder.getUpdatedAt());
+        Set<NtsDefaultAttributeDTO> customAttributes = Optional.ofNullable(builder.getCustomAttributes())
+            .orElseGet(HashSet::new);
+        setCustomAttributes(customAttributes);
+    }
 
     public Long getId() {
         return id;
@@ -59,11 +85,11 @@ public class LocationDTO implements Serializable {
         this.name = name;
     }
 
-    public LocationAddressDTO getAddress() {
+    public NtsDefaultLocationAddressDTO getAddress() {
         return address;
     }
 
-    public void setAddress(LocationAddressDTO address) {
+    public void setAddress(NtsDefaultLocationAddressDTO address) {
         this.address = address;
     }
 
@@ -83,6 +109,14 @@ public class LocationDTO implements Serializable {
         this.active = active;
     }
 
+    public Instant getDeactivatedAt() {
+        return deactivatedAt;
+    }
+
+    public void setDeactivatedAt(Instant deactivatedAt) {
+        this.deactivatedAt = deactivatedAt;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -99,12 +133,13 @@ public class LocationDTO implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    public Instant getDeactivatedAt() {
-        return deactivatedAt;
+    @Override
+    public Set<NtsDefaultAttributeDTO> getCustomAttributes() {
+        return customAttributes;
     }
 
-    public void setDeactivatedAt(Instant deactivatedAt) {
-        this.deactivatedAt = deactivatedAt;
+    public void setCustomAttributes(Set<NtsDefaultAttributeDTO> customAttributes) {
+        this.customAttributes = customAttributes;
     }
 
     // prettier-ignore

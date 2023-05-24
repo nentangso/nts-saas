@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Represents the address of a location.
  */
-public class LocationAddressDTO implements Serializable {
+public class NtsDefaultLocationAddressDTO implements NtsAddressDTO, Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -52,6 +52,23 @@ public class LocationAddressDTO implements Serializable {
      * The zip or postal code.
      */
     private String zip;
+
+    public NtsDefaultLocationAddressDTO() {
+    }
+
+    public NtsDefaultLocationAddressDTO(NtsLocationDTOBuilder builder) {
+        setPhone(builder.getPhone());
+        setAddress1(builder.getAddress1());
+        setAddress2(builder.getAddress2());
+        setCountry(builder.getCountry());
+        setCountryCode(builder.getCountryCode());
+        setLocalizedCountryName(builder.getLocalizedCountryName());
+        setCity(builder.getCity());
+        setProvince(builder.getProvince());
+        setProvinceCode(builder.getProvinceCode());
+        setLocalizedProvinceName(builder.getLocalizedProvinceName());
+        setZip(builder.getZip());
+    }
 
     public String getPhone() {
         return phone;
