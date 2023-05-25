@@ -1,7 +1,7 @@
 package org.nentangso.core.service.dto;
 
 import java.time.Instant;
-import java.util.Set;
+import java.util.List;
 
 /**
  * A location represents a geographical location where your stores, pop-up stores, headquarters, and warehouses exist.
@@ -64,7 +64,7 @@ public interface NtsLocationDTO {
         return null;
     }
 
-    default <A extends NtsAttributeDTO> Set<A> getCustomAttributes() {
+    default <A extends NtsAttributeDTO> List<A> getCustomAttributes() {
         return null;
     }
 
