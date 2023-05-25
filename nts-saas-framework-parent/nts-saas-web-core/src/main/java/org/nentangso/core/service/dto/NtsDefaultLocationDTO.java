@@ -2,9 +2,7 @@ package org.nentangso.core.service.dto;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A location represents a geographical location where your stores, pop-up stores, headquarters, and warehouses exist.
@@ -49,7 +47,7 @@ public class NtsDefaultLocationDTO implements NtsLocationDTO, Serializable {
     /**
      * The custom information added to the location on behalf of the customer.
      */
-    private Set<NtsDefaultAttributeDTO> customAttributes;
+    private List<NtsDefaultAttributeDTO> customAttributes;
 
     public NtsDefaultLocationDTO() {
     }
@@ -64,8 +62,8 @@ public class NtsDefaultLocationDTO implements NtsLocationDTO, Serializable {
         setDeactivatedAt(builder.getDeactivatedAt());
         setCreatedAt(builder.getCreatedAt());
         setUpdatedAt(builder.getUpdatedAt());
-        Set<NtsDefaultAttributeDTO> customAttributes = Optional.ofNullable(builder.getCustomAttributes())
-            .orElseGet(HashSet::new);
+        List<NtsDefaultAttributeDTO> customAttributes = Optional.ofNullable(builder.getCustomAttributes())
+            .orElseGet(Collections::emptyList);
         setCustomAttributes(customAttributes);
     }
 
@@ -134,11 +132,11 @@ public class NtsDefaultLocationDTO implements NtsLocationDTO, Serializable {
     }
 
     @Override
-    public Set<NtsDefaultAttributeDTO> getCustomAttributes() {
+    public List<NtsDefaultAttributeDTO> getCustomAttributes() {
         return customAttributes;
     }
 
-    public void setCustomAttributes(Set<NtsDefaultAttributeDTO> customAttributes) {
+    public void setCustomAttributes(List<NtsDefaultAttributeDTO> customAttributes) {
         this.customAttributes = customAttributes;
     }
 
