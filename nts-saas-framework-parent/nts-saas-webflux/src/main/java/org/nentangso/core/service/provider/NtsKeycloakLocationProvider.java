@@ -135,11 +135,11 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefau
             .build();
     }
 
-    private Set<NtsDefaultAttributeDTO> toCustomAttributes(Map<String, List<String>> input) {
+    private List<NtsDefaultAttributeDTO> toCustomAttributes(Map<String, List<String>> input) {
         if (!keycloakLocationProperties.getCustomAttributeKeys().isEmpty() || input.isEmpty()) {
-            return Collections.emptySet();
+            return Collections.emptyList();
         }
-        final Set<NtsDefaultAttributeDTO> attributes = new HashSet<>();
+        final List<NtsDefaultAttributeDTO> attributes = new ArrayList<>();
         keycloakLocationProperties.getCustomAttributeKeys()
             .stream()
             .filter(input::containsKey)

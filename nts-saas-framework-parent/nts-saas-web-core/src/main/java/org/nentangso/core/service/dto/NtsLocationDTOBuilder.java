@@ -1,7 +1,7 @@
 package org.nentangso.core.service.dto;
 
 import java.time.Instant;
-import java.util.Set;
+import java.util.List;
 
 public class NtsLocationDTOBuilder {
     /**
@@ -79,7 +79,7 @@ public class NtsLocationDTOBuilder {
     /**
      * The custom information added to the location on behalf of the customer.
      */
-    private Set<NtsDefaultAttributeDTO> customAttributes;
+    private List<NtsDefaultAttributeDTO> customAttributes;
 
     public Long getId() {
         return id;
@@ -243,11 +243,11 @@ public class NtsLocationDTOBuilder {
         return this;
     }
 
-    public Set<NtsDefaultAttributeDTO> getCustomAttributes() {
+    public List<NtsDefaultAttributeDTO> getCustomAttributes() {
         return customAttributes;
     }
 
-    public NtsLocationDTOBuilder customAttributes(Set<NtsDefaultAttributeDTO> customAttributes) {
+    public NtsLocationDTOBuilder customAttributes(List<NtsDefaultAttributeDTO> customAttributes) {
         this.customAttributes = customAttributes;
         return this;
     }
