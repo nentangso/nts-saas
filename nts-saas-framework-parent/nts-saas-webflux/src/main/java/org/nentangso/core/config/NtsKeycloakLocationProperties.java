@@ -6,8 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @ConditionalOnProperty(
     prefix = "nts.helper.location",
@@ -25,7 +25,7 @@ public class NtsKeycloakLocationProperties implements Serializable {
 
     private String internalClientId = "";
 
-    private final Set<String> customAttributeKeys = new HashSet<>();
+    private final List<String> customAttributeKeys = new ArrayList<>();
 
     private String cacheKeyPrefix = "nts_helper_location__";
 
@@ -55,7 +55,7 @@ public class NtsKeycloakLocationProperties implements Serializable {
         this.internalClientId = internalClientId;
     }
 
-    public Set<String> getCustomAttributeKeys() {
+    public List<String> getCustomAttributeKeys() {
         return customAttributeKeys;
     }
 

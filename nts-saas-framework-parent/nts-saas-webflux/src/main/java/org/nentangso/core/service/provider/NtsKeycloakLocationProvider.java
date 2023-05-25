@@ -91,10 +91,10 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefau
         return keycloakLocationProperties.getCacheKeyPrefix() + "locations_by_id";
     }
 
-    private Set<NtsDefaultLocationDTO> toLocations(Collection<KeycloakClientRole> clientRoles) {
+    private List<NtsDefaultLocationDTO> toLocations(Collection<KeycloakClientRole> clientRoles) {
         return clientRoles.stream()
             .map(this::toLocation)
-            .collect(Collectors.toSet());
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -135,11 +135,11 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefau
             .build();
     }
 
-    private Set<NtsDefaultAttributeDTO> toCustomAttributes(Map<String, List<String>> input) {
-        if (!keycloakLocationProperties.getCustomAttributeKeys().isEmpty() || input.isEmpty()) {
-            return Collections.emptySet();
+    private List<NtsDefaultAttributeDTO> toCustomAttributes(Map<String, List<String>> input) {
+        if (keycloakLocationProperties.getCustomAttributeKeys().isEmpty() || input.isEmpty()) {
+            return Collections.emptyList();
         }
-        final Set<NtsDefaultAttributeDTO> attributes = new HashSet<>();
+        final List<NtsDefaultAttributeDTO> attributes = new ArrayList<>();
         keycloakLocationProperties.getCustomAttributeKeys()
             .stream()
             .filter(input::containsKey)
