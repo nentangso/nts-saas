@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-import java.util.Set;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -30,7 +30,7 @@ public class NtsLocationResource {
     }
 
     @GetMapping("/locations")
-    public Mono<Set<NtsLocationDTO>> findAll() {
+    public Mono<List<NtsLocationDTO>> findAll() {
         return locationHelper.findAll();
     }
 

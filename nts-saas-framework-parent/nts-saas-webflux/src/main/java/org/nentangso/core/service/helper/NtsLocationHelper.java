@@ -8,8 +8,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import javax.validation.constraints.Min;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 
 @ConditionalOnProperty(
     prefix = "nts.helper.location",
@@ -18,7 +17,7 @@ import java.util.Set;
 )
 @Service
 public class NtsLocationHelper {
-    private final NtsLocationProvider locationProvider;
+    private final NtsLocationProvider<?> locationProvider;
 
     public NtsLocationHelper(NtsLocationProviderFactory locationProviderFactory) {
         this.locationProvider = locationProviderFactory.getLocationProvider();
@@ -28,8 +27,11 @@ public class NtsLocationHelper {
         return locationProvider.findAllIds();
     }
 
-    public Mono<Set<NtsLocationDTO>> findAll() {
-        return locationProvider.findAll();
+    public Mono<List<NtsLocationDTO>> findAll() {
+        return locationProvider.findAll()
+            .map(Map::values)
+            .map(ArrayList::new)
+            .map(Collections::unmodifiableList);
     }
 
     public Mono<NtsLocationDTO> findById(Long id) {

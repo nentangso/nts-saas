@@ -1,7 +1,7 @@
 package org.nentangso.core.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.CollectionType;
+import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.SimpleType;
 import com.fasterxml.jackson.databind.type.TypeBindings;
 import com.fasterxml.jackson.databind.type.TypeFactory;
@@ -17,6 +17,7 @@ import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import java.util.Map;
 import java.util.Set;
 
 @ConditionalOnProperty(
@@ -27,20 +28,21 @@ import java.util.Set;
 @Configuration
 public class NtsKeycloakCacheConfiguration {
     @Bean
-    ReactiveRedisOperations<String, Set<NtsDefaultLocationDTO>> ntsLocationsOps(ReactiveRedisConnectionFactory factory, ObjectMapper objectMapper) {
-        CollectionType type = CollectionType.construct(
-            Set.class,
+    ReactiveRedisOperations<String, Map<Long, NtsDefaultLocationDTO>> ntsLocationsOps(ReactiveRedisConnectionFactory factory, ObjectMapper objectMapper) {
+        MapType type = MapType.construct(
+            Map.class,
             TypeBindings.create(Set.class, SimpleType.constructUnsafe(NtsDefaultLocationDTO.class)),
             TypeFactory.unknownType(),
             null,
+            SimpleType.constructUnsafe(Long.class),
             SimpleType.constructUnsafe(NtsDefaultLocationDTO.class)
         );
-        Jackson2JsonRedisSerializer<Set<NtsDefaultLocationDTO>> serializer = new Jackson2JsonRedisSerializer<>(type);
+        Jackson2JsonRedisSerializer<Map<Long, NtsDefaultLocationDTO>> serializer = new Jackson2JsonRedisSerializer<>(type);
         serializer.setObjectMapper(objectMapper);
 
-        RedisSerializationContext.RedisSerializationContextBuilder<String, Set<NtsDefaultLocationDTO>> builder = RedisSerializationContext.newSerializationContext(new StringRedisSerializer());
+        RedisSerializationContext.RedisSerializationContextBuilder<String, Map<Long, NtsDefaultLocationDTO>> builder = RedisSerializationContext.newSerializationContext(new StringRedisSerializer());
 
-        RedisSerializationContext<String, Set<NtsDefaultLocationDTO>> context = builder.value(serializer).build();
+        RedisSerializationContext<String, Map<Long, NtsDefaultLocationDTO>> context = builder.value(serializer).build();
 
         return new ReactiveRedisTemplate<>(factory, context);
     }
