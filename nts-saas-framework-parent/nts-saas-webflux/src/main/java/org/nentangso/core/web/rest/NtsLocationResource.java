@@ -1,6 +1,7 @@
 package org.nentangso.core.web.rest;
 
 import org.nentangso.core.service.dto.NtsLocationDTO;
+import org.nentangso.core.service.errors.NtsNotFoundException;
 import org.nentangso.core.service.helper.NtsLocationHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -31,11 +33,15 @@ public class NtsLocationResource {
 
     @GetMapping("/locations")
     public Mono<List<NtsLocationDTO>> findAll() {
-        return locationHelper.findAll();
+        log.debug("Request to get locations");
+        return locationHelper.findAll()
+            .switchIfEmpty(Mono.just(Collections.emptyList()));
     }
 
     @GetMapping("/locations/{id}")
     public Mono<NtsLocationDTO> findOne(@PathVariable Long id) {
-        return locationHelper.findById(id);
+        log.debug("Request to find location by id={}", id);
+        return locationHelper.findById(id)
+            .switchIfEmpty(Mono.error(NtsNotFoundException::new));
     }
 }

@@ -32,6 +32,8 @@ import java.util.stream.Collectors;
 public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefaultLocationDTO> {
     private static final Logger log = LoggerFactory.getLogger(NtsKeycloakLocationProvider.class);
 
+    public static boolean disableCacheForTests = false;
+
     public static final String PROVIDER_NAME = "keycloak";
     public static final String ATTRIBUTE_ACTIVE = "active";
     public static final String ATTRIBUTE_CREATED_AT = "createdAt";
@@ -76,19 +78,34 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefau
 
     @Override
     public Mono<Map<Long, NtsDefaultLocationDTO>> findAll() {
-        final String cacheKey = generateCacheKey();
-        return locationsRedisOps.opsForValue().get(cacheKey)
+        return getCacheLocations()
             .switchIfEmpty(Mono.defer(() -> {
                 String clientId = keycloakLocationProperties.getInternalClientId();
                 return keycloakClient.findClientRoles(clientId, false)
                     .map(this::toLocations)
                     .map(items -> items.stream().collect(Collectors.toMap(NtsDefaultLocationDTO::getId, v -> v)))
-                    .flatMap(items -> locationsRedisOps.opsForValue().set(cacheKey, items).thenReturn(items));
+                    .flatMap(this::setCacheLocations);
             }));
+    }
+
+    private Mono<Map<Long, NtsDefaultLocationDTO>> getCacheLocations() {
+        if (disableCacheForTests) {
+            return Mono.empty();
+        }
+        final String cacheKey = generateCacheKey();
+        return locationsRedisOps.opsForValue().get(cacheKey);
     }
 
     private String generateCacheKey() {
         return keycloakLocationProperties.getCacheKeyPrefix() + "locations_by_id";
+    }
+
+    private Mono<Map<Long, NtsDefaultLocationDTO>> setCacheLocations(Map<Long, NtsDefaultLocationDTO> items) {
+        if (disableCacheForTests) {
+            return Mono.just(items);
+        }
+        final String cacheKey = generateCacheKey();
+        return locationsRedisOps.opsForValue().set(cacheKey, items).thenReturn(items);
     }
 
     private List<NtsDefaultLocationDTO> toLocations(Collection<KeycloakClientRole> clientRoles) {
@@ -106,7 +123,7 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefau
     @Override
     public Mono<NtsLocationDTO> findById(final Long id) {
         return findAll()
-            .map(f -> f.getOrDefault(id, null));
+            .flatMap(f -> Mono.justOrEmpty(f.getOrDefault(id, null)));
     }
 
     private NtsDefaultLocationDTO toLocation(KeycloakClientRole clientRole) {
