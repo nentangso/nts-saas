@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
     havingValue = NtsKeycloakLocationProvider.PROVIDER_NAME
 )
 @Service
-public class NtsKeycloakLocationProvider implements NtsLocationProvider {
+public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefaultLocationDTO> {
     private static final Logger log = LoggerFactory.getLogger(NtsKeycloakLocationProvider.class);
 
     public static final String PROVIDER_NAME = "keycloak";
@@ -56,9 +56,9 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
     private final NtsKeycloakLocationProperties keycloakLocationProperties;
 
     private final NtsKeycloakClient keycloakClient;
-    private final ReactiveRedisOperations<String, Set<NtsDefaultLocationDTO>> locationsRedisOps;
+    private final ReactiveRedisOperations<String, Map<Long, NtsDefaultLocationDTO>> locationsRedisOps;
 
-    public NtsKeycloakLocationProvider(NtsKeycloakLocationProperties keycloakLocationProperties, NtsKeycloakClient keycloakClient, ReactiveRedisOperations<String, Set<NtsDefaultLocationDTO>> locationsRedisOps) {
+    public NtsKeycloakLocationProvider(NtsKeycloakLocationProperties keycloakLocationProperties, NtsKeycloakClient keycloakClient, ReactiveRedisOperations<String, Map<Long, NtsDefaultLocationDTO>> locationsRedisOps) {
         this.keycloakLocationProperties = keycloakLocationProperties;
         this.keycloakClient = keycloakClient;
         this.locationsRedisOps = locationsRedisOps;
@@ -75,19 +75,20 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
     }
 
     @Override
-    public Mono<Set<NtsDefaultLocationDTO>> findAll() {
-        final String cacheKey = generateCacheKey("locations");
+    public Mono<Map<Long, NtsDefaultLocationDTO>> findAll() {
+        final String cacheKey = generateCacheKey();
         return locationsRedisOps.opsForValue().get(cacheKey)
             .switchIfEmpty(Mono.defer(() -> {
                 String clientId = keycloakLocationProperties.getInternalClientId();
                 return keycloakClient.findClientRoles(clientId, false)
                     .map(this::toLocations)
+                    .map(items -> items.stream().collect(Collectors.toMap(NtsDefaultLocationDTO::getId, v -> v)))
                     .flatMap(items -> locationsRedisOps.opsForValue().set(cacheKey, items).thenReturn(items));
             }));
     }
 
-    private String generateCacheKey(String key) {
-        return keycloakLocationProperties.getCacheKeyPrefix() + key;
+    private String generateCacheKey() {
+        return keycloakLocationProperties.getCacheKeyPrefix() + "locations_by_id";
     }
 
     private Set<NtsDefaultLocationDTO> toLocations(Collection<KeycloakClientRole> clientRoles) {
@@ -99,14 +100,13 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
     @Override
     public Mono<Set<Long>> findAllIds() {
         return findAll()
-            .map(items -> items.stream().map(NtsDefaultLocationDTO::getId).collect(Collectors.toSet()));
+            .map(Map::keySet);
     }
 
     @Override
-    public Mono<NtsLocationDTO> findById(Long id) {
-        String clientId = keycloakLocationProperties.getInternalClientId();
-        return keycloakClient.findClientRole(clientId, String.valueOf(id))
-            .map(this::toLocation);
+    public Mono<NtsLocationDTO> findById(final Long id) {
+        return findAll()
+            .map(f -> f.getOrDefault(id, null));
     }
 
     private NtsDefaultLocationDTO toLocation(KeycloakClientRole clientRole) {
@@ -136,13 +136,15 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
     }
 
     private Set<NtsDefaultAttributeDTO> toCustomAttributes(Map<String, List<String>> input) {
+        if (!keycloakLocationProperties.getCustomAttributeKeys().isEmpty() || input.isEmpty()) {
+            return Collections.emptySet();
+        }
         final Set<NtsDefaultAttributeDTO> attributes = new HashSet<>();
-        Optional.ofNullable(input)
-            .orElseGet(Collections::emptyMap)
-            .forEach((key, values) -> {
-                if (!keycloakLocationProperties.getCustomAttributeKeys().contains(key)) {
-                    return;
-                }
+        keycloakLocationProperties.getCustomAttributeKeys()
+            .stream()
+            .filter(input::containsKey)
+            .forEach(key -> {
+                List<String> values = input.get(key);
                 if (values == null || values.isEmpty() || StringUtils.isEmpty(values.get(0))) {
                     return;
                 }
