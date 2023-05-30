@@ -175,6 +175,38 @@ public final class NtsSecurityUtils implements InitializingBean {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Get claim value of current user by claim name
+     *
+     * @param claim the name of claim in JWT
+     * @return Optional of claim value
+     */
+    public static Optional<Object> getCurrentUserClaim(String claim) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return extractClaim(authentication, claim);
+    }
+
+    private static Optional<Object> extractClaim(Authentication authentication, String claim) {
+        if (authentication == null) {
+            return Optional.empty();
+        } else if (authentication.getPrincipal() instanceof UserDetails) {
+            UserDetails springSecurityUser = (UserDetails) authentication.getPrincipal();
+            return Optional.empty();
+        } else if (authentication instanceof JwtAuthenticationToken) {
+            Object value = ((JwtAuthenticationToken) authentication).getToken().getClaims().get(claim);
+            return Optional.ofNullable(value);
+        } else if (authentication.getPrincipal() instanceof DefaultOidcUser) {
+            Map<String, Object> attributes = ((DefaultOidcUser) authentication.getPrincipal()).getAttributes();
+            if (attributes.containsKey(claim)) {
+                Object value = attributes.get(claim);
+                return Optional.ofNullable(value);
+            }
+        } else if (authentication.getPrincipal() instanceof String) {
+            return Optional.empty();
+        }
+        return Optional.empty();
+    }
+
     private static NtsSecurityUtils instance;
 
     @Override

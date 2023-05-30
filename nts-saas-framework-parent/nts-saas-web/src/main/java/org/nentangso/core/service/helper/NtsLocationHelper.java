@@ -7,9 +7,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.Min;
-import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @ConditionalOnProperty(
     prefix = "nts.helper.location",
@@ -18,36 +19,44 @@ import java.util.Set;
 )
 @Service
 public class NtsLocationHelper {
-    private final NtsLocationProvider locationProvider;
+    private final NtsLocationProvider<? extends NtsLocationDTO> locationProvider;
 
     public NtsLocationHelper(NtsLocationProviderFactory locationProviderFactory) {
         this.locationProvider = locationProviderFactory.getLocationProvider();
+    }
+
+    public List<? extends NtsLocationDTO> findAll() {
+        return locationProvider.findAll()
+            .values()
+            .stream()
+            .collect(Collectors.toUnmodifiableList());
     }
 
     private Set<Long> findAlIds() {
         return locationProvider.findAllIds();
     }
 
-    public Set<NtsLocationDTO> findAll() {
-        return Collections.emptySet();
-    }
-
-    public Optional<NtsLocationDTO> findById(Long id) {
+    public Optional<? extends NtsLocationDTO> findById(Long id) {
         return locationProvider.findById(id);
     }
 
     public Set<Long> getGrantedLocationIds() {
-        if (isGrantedAnyLocations()) {
-            return findAlIds();
-        }
-        return Collections.emptySet();
+        return locationProvider.getGrantedLocationIds();
     }
 
-    public boolean isGrantedAnyLocations() {
-        return locationProvider.isGrantedAnyLocations();
+    public boolean isGrantedAllLocations() {
+        return locationProvider.isGrantedAllLocations();
     }
 
-    public boolean hasGrantedLocation(@Min(1) Integer id) {
-        return locationProvider.hasGrantedLocation(id);
+    public boolean isGrantedAnyLocations(Iterable<Long> ids) {
+        return locationProvider.isGrantedAnyLocations(ids);
+    }
+
+    public boolean isGrantedAnyLocations(Long... ids) {
+        return locationProvider.isGrantedAnyLocations(ids);
+    }
+
+    public boolean isGrantedLocation(@Min(1L) Long id) {
+        return locationProvider.isGrantedLocation(id);
     }
 }

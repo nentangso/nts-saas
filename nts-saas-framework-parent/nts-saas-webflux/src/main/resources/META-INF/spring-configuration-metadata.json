@@ -1,0 +1,90 @@
+{
+  "groups": [
+    {
+      "name": "nts-keycloak-location",
+      "type": "org.nentangso.core.config.NtsKeycloakLocationProperties",
+      "sourceType": "org.nentangso.core.config.NtsKeycloakLocationProperties",
+      "description": "Config keycloak location provider."
+    }
+  ],
+  "properties": [
+    {
+      "name": "nts.security.oauth2.client.configuration.roles-claim",
+      "type": "java.lang.String",
+      "defaultValue": "roles",
+      "description": "The claim name in JWT access token, that hold granted roles/groups of current user."
+    },
+    {
+      "name": "nts.security.oauth2.client.configuration.role-prefix",
+      "type": "java.lang.String",
+      "defaultValue": "ROLE_",
+      "description": "The role/group prefix, filter only the authority that starts with the prefix."
+    },
+    {
+      "name": "nts.security.oauth2.client.configuration.reverse-order-of-display-name",
+      "type": "java.lang.Boolean",
+      "defaultValue": true,
+      "description": "If true the display name is {lastName} {firstName}, else the display name is {firstName} {lastName}"
+    },
+    {
+      "name": "nts.helper.location.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "description": "If true then the NtsLocationHelper bean is created."
+    },
+    {
+      "name": "nts.helper.location.provider",
+      "type": "java.lang.String",
+      "defaultValue": "keycloak",
+      "description": "The location helper provider name. Available values is keycloak."
+    },
+    {
+      "name": "nts.helper.location.keycloak.client-registration-id",
+      "type": "java.lang.String",
+      "defaultValue": "nts-helper-location",
+      "description": "The oauth2 client registration id, that must be configured in spring.security.oauth2.registration.{client-registration-id}.* properties.",
+      "sourceType": "org.nentangso.core.config.NtsKeycloakLocationProperties"
+    },
+    {
+      "name": "nts.helper.location.keycloak.admin-base-url",
+      "type": "java.lang.String",
+      "description": "The base url of keycloak admin restful api. Ex: http://localhost:9080/admin/realms/nts",
+      "sourceType": "org.nentangso.core.config.NtsKeycloakLocationProperties"
+    },
+    {
+      "name": "nts.helper.location.keycloak.internal-client-id",
+      "type": "java.lang.String",
+      "description": "The keycloak internal id of the client, that setup locations as client scopes.",
+      "sourceType": "org.nentangso.core.config.NtsKeycloakLocationProperties"
+    },
+    {
+      "name": "nts.helper.location.keycloak.custom-attribute-keys",
+      "type": "java.util.List<java.lang.String>",
+      "description": "The list of custom attribute keys. The key must match with client role attribute key.",
+      "sourceType": "org.nentangso.core.config.NtsKeycloakLocationProperties"
+    },
+    {
+      "name": "nts.helper.location.keycloak.cache-key-prefix",
+      "type": "java.lang.String",
+      "description": "The prefix of redis cache keys",
+      "sourceType": "org.nentangso.core.config.NtsKeycloakLocationProperties"
+    },
+    {
+      "name": "nts.helper.location.keycloak.bit-set-claim",
+      "type": "java.lang.String",
+      "description": "The name of claim that present granted location ids in format of bitset. The bit 0 present grant all locations. The bit {number} present location with id = {number}.",
+      "sourceType": "org.nentangso.core.config.NtsKeycloakLocationProperties"
+    }
+  ],
+  "hints": [
+    {
+      "name": "nts.helper.location.provider",
+      "values": [
+        {
+          "value": "keycloak",
+          "description": "Use keycloak client roles to configure locations. The max location id must less than 1024."
+        }
+      ]
+    }
+  ]
+}

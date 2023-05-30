@@ -29,7 +29,7 @@ public class NtsKeycloakLocationProperties implements Serializable {
 
     private String cacheKeyPrefix = "nts_helper_location__";
 
-    private String deserializationClaim = "default";
+    private String bitSetClaim = "nlb";
 
     public String getClientRegistrationId() {
         return clientRegistrationId;
@@ -67,11 +67,11 @@ public class NtsKeycloakLocationProperties implements Serializable {
         this.cacheKeyPrefix = cacheKeyPrefix;
     }
 
-    public String getDeserializationClaim() {
-        return deserializationClaim;
+    public String getBitSetClaim() {
+        return bitSetClaim;
     }
 
-    public void setDeserializationClaim(String deserializationClaim) {
-        this.deserializationClaim = deserializationClaim;
+    public void setBitSetClaim(String bitSetClaim) {
+        this.bitSetClaim = bitSetClaim;
     }
 }

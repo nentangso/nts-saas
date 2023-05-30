@@ -1,6 +1,7 @@
 package org.nentangso.core.service.provider;
 
 import org.apache.commons.lang3.StringUtils;
+import org.nentangso.core.service.dto.NtsLocationDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
@@ -24,7 +25,7 @@ public class NtsLocationProviderFactory {
         this.provider = provider;
     }
 
-    public NtsLocationProvider getLocationProvider() {
+    public NtsLocationProvider<? extends NtsLocationDTO> getLocationProvider() {
         if (StringUtils.equals(provider, NtsKeycloakLocationProvider.PROVIDER_NAME)) {
             return applicationContext.getBean(NtsKeycloakLocationProvider.class);
         }

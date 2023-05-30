@@ -1,25 +1,32 @@
 package org.nentangso.core.service.provider;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.nentangso.core.client.NtsKeycloakClient;
 import org.nentangso.core.client.vm.KeycloakClientRole;
 import org.nentangso.core.config.NtsKeycloakLocationProperties;
+import org.nentangso.core.security.NtsSecurityUtils;
+import org.nentangso.core.service.dto.NtsAttributeDTO;
+import org.nentangso.core.service.dto.NtsDefaultAttributeDTO;
+import org.nentangso.core.service.dto.NtsDefaultLocationDTO;
 import org.nentangso.core.service.dto.NtsLocationDTO;
-import org.nentangso.core.service.errors.NtsNotFoundException;
+import org.redisson.api.RBucket;
+import org.redisson.api.RedissonClient;
+import org.redisson.codec.JsonJacksonCodec;
+import org.redisson.jcache.configuration.RedissonConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
+import javax.cache.configuration.Configuration;
+import javax.validation.constraints.Min;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @ConditionalOnProperty(
     prefix = "nts.helper.location",
@@ -27,8 +34,10 @@ import java.util.stream.Collectors;
     havingValue = NtsKeycloakLocationProvider.PROVIDER_NAME
 )
 @Service
-public class NtsKeycloakLocationProvider implements NtsLocationProvider {
+public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefaultLocationDTO> {
     private static final Logger log = LoggerFactory.getLogger(NtsKeycloakLocationProvider.class);
+
+    public static boolean disableCacheForTests = false;
 
     public static final String PROVIDER_NAME = "keycloak";
     public static final String ATTRIBUTE_ACTIVE = "active";
@@ -46,17 +55,18 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
     public static final String ATTRIBUTE_PROVINCE_CODE = "provinceCode";
     public static final String ATTRIBUTE_LOCALIZED_PROVINCE_NAME = "localizedProvinceName";
     public static final String ATTRIBUTE_ZIP = "zip";
-
-    @Value("${nts.helper.location.claim:}")
-    private String claim;
+    public static final String ATTRIBUTE_ADDRESS_VERIFIED = "addressVerified";
 
     private final NtsKeycloakLocationProperties keycloakLocationProperties;
-
     private final NtsKeycloakClient keycloakClient;
+    private final RedissonClient redissonClient;
+    private final ObjectMapper objectMapper;
 
-    public NtsKeycloakLocationProvider(NtsKeycloakLocationProperties keycloakLocationProperties, NtsKeycloakClient keycloakClient) {
+    public NtsKeycloakLocationProvider(NtsKeycloakLocationProperties keycloakLocationProperties, NtsKeycloakClient keycloakClient, Configuration<Object, Object> jcacheConfiguration, ObjectMapper objectMapper) {
         this.keycloakLocationProperties = keycloakLocationProperties;
         this.keycloakClient = keycloakClient;
+        this.redissonClient = ((RedissonConfiguration<?, ?>) jcacheConfiguration).getRedisson();
+        this.objectMapper = objectMapper;
         validateKeycloakProperties();
     }
 
@@ -70,47 +80,56 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
     }
 
     @Override
-    public Set<Long> findAllIds() {
+    public Map<Long, NtsDefaultLocationDTO> findAll() {
+        Map<Long, NtsDefaultLocationDTO> cacheLocations = getCacheLocations();
+        if (cacheLocations != null && !cacheLocations.isEmpty()) {
+            return cacheLocations;
+        }
         String clientId = keycloakLocationProperties.getInternalClientId();
         ResponseEntity<List<KeycloakClientRole>> response = keycloakClient.findClientRoles(clientId, false);
-        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-            log.error("Cannot fetch client roles {}", response);
-            throw new AccessDeniedException("Cannot fetch client roles");
+        if (!response.getStatusCode().is2xxSuccessful() || !response.hasBody()) {
+            log.error("Get keycloak client roles of client {} error, response={}", clientId, response);
+            return Collections.emptyMap();
         }
-        Set<Long> locationIds = toLocationIds(response.getBody());
-        log.debug("Fetch success location_ids {}", locationIds);
-        return locationIds;
+        Map<Long, NtsDefaultLocationDTO> locations = toLocations(response.getBody())
+            .stream()
+            .collect(Collectors.toMap(NtsDefaultLocationDTO::getId, v -> v));
+        setCacheLocations(locations);
+        return locations;
     }
 
-    public Set<Long> toLocationIds(Collection<KeycloakClientRole> clientRoles) {
+    private Map<Long, NtsDefaultLocationDTO> getCacheLocations() {
+        if (disableCacheForTests) {
+            return null;
+        }
+        final String cacheKey = generateCacheKey();
+        RBucket<Map<Long, NtsDefaultLocationDTO>> bucket = redissonClient.getBucket(cacheKey, new JsonJacksonCodec(objectMapper));
+        return bucket.get();
+    }
+
+    private String generateCacheKey() {
+        return keycloakLocationProperties.getCacheKeyPrefix() + "locations_by_id";
+    }
+
+    private void setCacheLocations(Map<Long, NtsDefaultLocationDTO> locations) {
+        if (disableCacheForTests) {
+            return;
+        }
+        final String cacheKey = generateCacheKey();
+        RBucket<Map<Long, NtsDefaultLocationDTO>> bucket = redissonClient.getBucket(cacheKey, new JsonJacksonCodec(objectMapper));
+        bucket.set(locations);
+    }
+
+    private List<NtsDefaultLocationDTO> toLocations(List<KeycloakClientRole> clientRoles) {
         return Optional.ofNullable(clientRoles)
             .orElseGet(Collections::emptyList)
             .stream()
-            .map(m -> {
-                try {
-                    return Long.parseUnsignedLong(m.getName());
-                } catch (NumberFormatException ignored) {
-                    return null;
-                }
-            })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toSet());
+            .map(this::toLocation)
+            .collect(Collectors.toList());
     }
 
-    @Override
-    public Optional<NtsLocationDTO> findById(Long id) {
-        String clientId = keycloakLocationProperties.getInternalClientId();
-        ResponseEntity<KeycloakClientRole> response = keycloakClient.findClientRole(clientId, String.valueOf(id));
-        if (!response.getStatusCode().is2xxSuccessful()) {
-            log.error("Cannot fetch client role #{} => {}", id, response);
-            throw new NtsNotFoundException(String.format("Cannot fetch client role #%s", id));
-        }
-        NtsLocationDTO dto = toLocationDTO(response.getBody());
-        return Optional.of(dto);
-    }
-
-    private NtsLocationDTO toLocationDTO(KeycloakClientRole clientRole) {
-        log.debug("toLocationDTO clientRole={}", clientRole);
+    private NtsDefaultLocationDTO toLocation(KeycloakClientRole clientRole) {
+        log.trace("toLocationDTO clientRole={}", clientRole);
         Map<String, List<String>> attributes = clientRole.getAttributes();
         return NtsLocationDTO.newDefaultBuilder()
             .id(Long.parseUnsignedLong(clientRole.getName()))
@@ -126,11 +145,36 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
             .provinceCode(singleAttribute(attributes, ATTRIBUTE_PROVINCE_CODE).orElse(null))
             .localizedProvinceName(singleAttribute(attributes, ATTRIBUTE_LOCALIZED_PROVINCE_NAME).orElse(null))
             .zip(singleAttribute(attributes, ATTRIBUTE_ZIP).orElse(null))
+            .addressVerified(parseBooleanAttribute(attributes, ATTRIBUTE_ADDRESS_VERIFIED).orElse(false))
             .active(parseBooleanAttribute(attributes, ATTRIBUTE_ACTIVE).orElse(false))
             .deactivatedAt(parseInstantAttribute(attributes, ATTRIBUTE_DEACTIVATED_AT).orElse(null))
             .createdAt(parseInstantAttribute(attributes, ATTRIBUTE_CREATED_AT).orElse(null))
             .updatedAt(parseInstantAttribute(attributes, ATTRIBUTE_UPDATED_AT).orElse(null))
+            .customAttributes(toCustomAttributes(attributes))
             .build();
+    }
+
+    private List<NtsDefaultAttributeDTO> toCustomAttributes(Map<String, List<String>> input) {
+        if (keycloakLocationProperties.getCustomAttributeKeys().isEmpty() || input.isEmpty()) {
+            return Collections.emptyList();
+        }
+        final List<NtsDefaultAttributeDTO> attributes = new ArrayList<>();
+        keycloakLocationProperties.getCustomAttributeKeys()
+            .stream()
+            .filter(input::containsKey)
+            .forEach(key -> {
+                List<String> values = input.get(key);
+                if (values == null || values.isEmpty() || StringUtils.isEmpty(values.get(0))) {
+                    return;
+                }
+                String value = values.get(0);
+                NtsDefaultAttributeDTO attribute = NtsAttributeDTO.newBuilder()
+                    .key(key)
+                    .value(value)
+                    .build();
+                attributes.add(attribute);
+            });
+        return attributes;
     }
 
     private Optional<Boolean> parseBooleanAttribute(Map<String, List<String>> attributes, String key) {
@@ -143,9 +187,10 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
             return Optional.empty();
         }
         List<String> values = attributes.get(key);
-        return Optional.ofNullable(values)
-            .flatMap(f -> f.stream().findFirst())
-            .filter(StringUtils::isNotEmpty);
+        if (values == null || values.isEmpty() || StringUtils.isEmpty(values.get(0))) {
+            return Optional.empty();
+        }
+        return Optional.of(values.get(0));
     }
 
     private Optional<Instant> parseInstantAttribute(Map<String, List<String>> attributes, String key) {
@@ -154,38 +199,85 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider {
     }
 
     @Override
-    public boolean isGrantedAnyLocations() {
-        Jwt principal = getPrincipal();
-        if (!principal.hasClaim(claim)) {
-            return false;
-        }
-        String locationString = principal.getClaimAsString(claim);
-        BitSet byteLocations = getByteLocations(locationString);
-        return byteLocations.get(0);
+    public Set<Long> findAllIds() {
+        return findAll()
+            .keySet();
     }
 
     @Override
-    public boolean hasGrantedLocation(Integer id) {
-        Jwt principal = getPrincipal();
-        if (!principal.hasClaim(claim)) {
-            return false;
-        }
-        String locationString = principal.getClaimAsString(claim);
-        BitSet byteLocations = getByteLocations(locationString);
-        if (id > byteLocations.length() - 1) {
-            return false;
-        }
-        return byteLocations.get(id);
+    public Optional<NtsDefaultLocationDTO> findById(final Long id) {
+        NtsDefaultLocationDTO value = findAll()
+            .getOrDefault(id, null);
+        return Optional.ofNullable(value);
     }
 
-
-    private Jwt getPrincipal() {
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        return (Jwt) securityContext.getAuthentication().getPrincipal();
+    @Override
+    public Set<Long> getGrantedLocationIds() {
+        BitSet bitSet = getCurrentUserLocationBitSet();
+        if (isGrantedAllLocations(bitSet)) {
+            return findAllIds();
+        }
+        if (bitSet.length() <= 1) {
+            return Collections.emptySet();
+        }
+        final Set<Long> locationIds = new LinkedHashSet<>();
+        for (int i = 1; i < bitSet.length(); i++) {
+            if (!bitSet.get(i)) {
+                continue;
+            }
+            locationIds.add(Integer.toUnsignedLong(i));
+        }
+        return locationIds;
     }
 
-    private BitSet getByteLocations(String locationString) {
-        byte[] bytes = Base64.getDecoder().decode(locationString);
-        return BitSet.valueOf(bytes);
+    private BitSet getCurrentUserLocationBitSet() {
+        return NtsSecurityUtils.getCurrentUserClaim(keycloakLocationProperties.getBitsetClaim())
+            .map(this::parseBitSet)
+            .orElseGet(BitSet::new);
+    }
+
+    private BitSet parseBitSet(Object input) {
+        if (input instanceof String) {
+            byte[] bytes = Base64.getDecoder().decode((String) input);
+            return BitSet.valueOf(bytes);
+        }
+        return new BitSet();
+    }
+
+    @Override
+    public boolean isGrantedAllLocations() {
+        BitSet bitSet = getCurrentUserLocationBitSet();
+        return isGrantedAllLocations(bitSet);
+    }
+
+    private boolean isGrantedAllLocations(BitSet bitSet) {
+        return bitSet.length() > 0 && bitSet.get(0);
+    }
+
+    @Override
+    public boolean isGrantedAnyLocations(Iterable<Long> ids) {
+        BitSet bitSet = getCurrentUserLocationBitSet();
+        return StreamSupport.stream(ids.spliterator(), false)
+            .anyMatch(id -> isGrantedLocation(bitSet, id));
+    }
+
+    @Override
+    public boolean isGrantedAnyLocations(Long... ids) {
+        Iterable<Long> it = Stream.of(ids).collect(Collectors.toSet());
+        return isGrantedAnyLocations(it);
+    }
+
+    @Override
+    public boolean isGrantedLocation(@Min(1L) Long id) {
+        BitSet bitSet = getCurrentUserLocationBitSet();
+        return isGrantedLocation(bitSet, id);
+    }
+
+    private boolean isGrantedLocation(BitSet bitSet, Long id) {
+        if (id == null || id <= 0) {
+            return false;
+        }
+        return isGrantedAllLocations(bitSet)
+            || (id.intValue() < bitSet.length() && bitSet.get(id.intValue()));
     }
 }

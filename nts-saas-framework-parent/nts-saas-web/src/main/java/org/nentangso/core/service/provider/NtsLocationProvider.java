@@ -3,15 +3,24 @@ package org.nentangso.core.service.provider;
 import org.nentangso.core.service.dto.NtsLocationDTO;
 
 import javax.validation.constraints.Min;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public interface NtsLocationProvider {
+public interface NtsLocationProvider<T extends NtsLocationDTO> {
+    Map<Long, T> findAll();
+
     Set<Long> findAllIds();
 
-    Optional<NtsLocationDTO> findById(Long id);
+    Optional<T> findById(Long id);
 
-    boolean isGrantedAnyLocations();
+    Set<Long> getGrantedLocationIds();
 
-    boolean hasGrantedLocation(@Min(1) Integer id);
+    boolean isGrantedAllLocations();
+
+    boolean isGrantedAnyLocations(Iterable<Long> ids);
+
+    boolean isGrantedAnyLocations(Long... ids);
+
+    boolean isGrantedLocation(@Min(1L) Long id);
 }

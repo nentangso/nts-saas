@@ -12,10 +12,15 @@ public interface NtsLocationProvider<T extends NtsLocationDTO> {
 
     Mono<Set<Long>> findAllIds();
 
-    Mono<NtsLocationDTO> findById(final Long id);
+    Mono<T> findById(final Long id);
 
-    boolean isGrantedAnyLocations();
+    Mono<Set<Long>> getGrantedLocationIds();
 
-    boolean hasGrantedLocation(@Min(1) Integer id);
+    Mono<Boolean> isGrantedAllLocations();
 
+    Mono<Boolean> isGrantedAnyLocations(Iterable<Long> ids);
+
+    Mono<Boolean> isGrantedAnyLocations(Long... ids);
+
+    Mono<Boolean> isGrantedLocation(@Min(1L) Long id);
 }

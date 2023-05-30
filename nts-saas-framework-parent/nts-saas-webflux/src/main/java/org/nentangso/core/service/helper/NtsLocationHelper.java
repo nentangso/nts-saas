@@ -17,39 +17,44 @@ import java.util.*;
 )
 @Service
 public class NtsLocationHelper {
-    private final NtsLocationProvider<?> locationProvider;
+    private final NtsLocationProvider<? extends NtsLocationDTO> locationProvider;
 
     public NtsLocationHelper(NtsLocationProviderFactory locationProviderFactory) {
         this.locationProvider = locationProviderFactory.getLocationProvider();
     }
 
-    private Mono<Set<Long>> findAlIds() {
-        return locationProvider.findAllIds();
-    }
-
-    public Mono<List<NtsLocationDTO>> findAll() {
+    public Mono<List<? extends NtsLocationDTO>> findAll() {
         return locationProvider.findAll()
             .map(Map::values)
             .map(ArrayList::new)
             .map(Collections::unmodifiableList);
     }
 
-    public Mono<NtsLocationDTO> findById(Long id) {
+    private Mono<Set<Long>> findAlIds() {
+        return locationProvider.findAllIds();
+    }
+
+    public Mono<? extends NtsLocationDTO> findById(Long id) {
         return locationProvider.findById(id);
     }
 
     public Mono<Set<Long>> getGrantedLocationIds() {
-        if (isGrantedAnyLocations()) {
-            return findAlIds();
-        }
-        return Mono.just(Collections.emptySet());
+        return locationProvider.getGrantedLocationIds();
     }
 
-    public boolean isGrantedAnyLocations() {
-        return locationProvider.isGrantedAnyLocations();
+    public Mono<Boolean> isGrantedAllLocations() {
+        return locationProvider.isGrantedAllLocations();
     }
 
-    public boolean hasGrantedLocation(@Min(1) Integer id) {
-        return locationProvider.hasGrantedLocation(id);
+    public Mono<Boolean> isGrantedAnyLocations(Iterable<Long> ids) {
+        return locationProvider.isGrantedAnyLocations(ids);
+    }
+
+    public Mono<Boolean> isGrantedAnyLocations(Long... ids) {
+        return locationProvider.isGrantedAnyLocations(ids);
+    }
+
+    public Mono<Boolean> isGrantedLocation(@Min(1L) Long id) {
+        return locationProvider.isGrantedLocation(id);
     }
 }
