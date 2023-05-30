@@ -6,6 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @ConditionalOnProperty(
     prefix = "nts.helper.location",
@@ -23,7 +25,11 @@ public class NtsKeycloakLocationProperties implements Serializable {
 
     private String internalClientId = "";
 
-    private String deserializationClaim = "default";
+    private final List<String> customAttributeKeys = new ArrayList<>();
+
+    private String cacheKeyPrefix = "nts_helper_location__";
+
+    private String bitsetClaim = "nlb";
 
     public String getClientRegistrationId() {
         return clientRegistrationId;
@@ -49,11 +55,23 @@ public class NtsKeycloakLocationProperties implements Serializable {
         this.internalClientId = internalClientId;
     }
 
-    public String getDeserializationClaim() {
-        return deserializationClaim;
+    public List<String> getCustomAttributeKeys() {
+        return customAttributeKeys;
     }
 
-    public void setDeserializationClaim(String deserializationClaim) {
-        this.deserializationClaim = deserializationClaim;
+    public String getCacheKeyPrefix() {
+        return cacheKeyPrefix;
+    }
+
+    public void setCacheKeyPrefix(String cacheKeyPrefix) {
+        this.cacheKeyPrefix = cacheKeyPrefix;
+    }
+
+    public String getBitsetClaim() {
+        return bitsetClaim;
+    }
+
+    public void setBitsetClaim(String bitsetClaim) {
+        this.bitsetClaim = bitsetClaim;
     }
 }

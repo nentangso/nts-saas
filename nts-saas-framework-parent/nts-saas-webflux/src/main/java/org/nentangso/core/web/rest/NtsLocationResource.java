@@ -32,14 +32,14 @@ public class NtsLocationResource {
     }
 
     @GetMapping("/locations")
-    public Mono<List<NtsLocationDTO>> findAll() {
+    public Mono<List<? extends NtsLocationDTO>> findAll() {
         log.debug("Request to get locations");
         return locationHelper.findAll()
             .switchIfEmpty(Mono.just(Collections.emptyList()));
     }
 
     @GetMapping("/locations/{id}")
-    public Mono<NtsLocationDTO> findOne(@PathVariable Long id) {
+    public Mono<? extends NtsLocationDTO> findOne(@PathVariable Long id) {
         log.debug("Request to find location by id={}", id);
         return locationHelper.findById(id)
             .switchIfEmpty(Mono.error(NtsNotFoundException::new));

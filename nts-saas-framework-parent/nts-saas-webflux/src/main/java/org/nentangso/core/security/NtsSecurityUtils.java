@@ -8,7 +8,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -178,6 +177,34 @@ public final class NtsSecurityUtils implements InitializingBean {
     }
 
     private static NtsSecurityUtils instance;
+
+    public static Mono<Object> getCurrentUserClaim(String claim) {
+        return ReactiveSecurityContextHolder
+            .getContext()
+            .map(SecurityContext::getAuthentication)
+            .flatMap(authentication -> Mono.justOrEmpty(extractClaim(authentication, claim)));
+    }
+
+    private static Optional<Object> extractClaim(Authentication authentication, String claim) {
+        if (authentication == null) {
+            return Optional.empty();
+        } else if (authentication.getPrincipal() instanceof UserDetails) {
+            UserDetails springSecurityUser = (UserDetails) authentication.getPrincipal();
+            return Optional.empty();
+        } else if (authentication instanceof JwtAuthenticationToken) {
+            Object value = ((JwtAuthenticationToken) authentication).getToken().getClaims().get(claim);
+            return Optional.ofNullable(value);
+        } else if (authentication.getPrincipal() instanceof DefaultOidcUser) {
+            Map<String, Object> attributes = ((DefaultOidcUser) authentication.getPrincipal()).getAttributes();
+            if (attributes.containsKey(claim)) {
+                Object value = attributes.get(claim);
+                return Optional.ofNullable(value);
+            }
+        } else if (authentication.getPrincipal() instanceof String) {
+            return Optional.empty();
+        }
+        return Optional.empty();
+    }
 
     @Override
     public void afterPropertiesSet() {
