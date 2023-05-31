@@ -1,4 +1,4 @@
-package org.nentangso.core.service.provider;
+package org.nentangso.core.service.helper.location;
 
 import org.nentangso.core.config.NtsProperties;
 import org.nentangso.core.service.dto.NtsLocationDTO;
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 public class NtsLocationProviderFactory {
     private final ApplicationContext applicationContext;
     private final String provider;
+    private final String deserializer;
 
     public NtsLocationProviderFactory(
         ApplicationContext applicationContext,
@@ -22,6 +23,7 @@ public class NtsLocationProviderFactory {
     ) {
         this.applicationContext = applicationContext;
         this.provider = ntsProperties.getHelper().getLocation().getProvider();
+        this.deserializer = ntsProperties.getHelper().getLocation().getDeserializer();
     }
 
     public NtsLocationProvider<? extends NtsLocationDTO> getLocationProvider() {
@@ -32,6 +34,18 @@ public class NtsLocationProviderFactory {
             throw new RuntimeException(String.format(
                 "Configuration property nts.helper.location.provider class %s can not be loaded.",
                 provider
+            ));
+        }
+    }
+
+    public NtsLocationDeserializer getLocationDeserializer() {
+        try {
+            Class<?> clazz = deserializer != null ? Class.forName(deserializer) : NtsBitSetLocationDeserializer.class;
+            return (NtsLocationDeserializer) applicationContext.getBean(clazz);
+        } catch (Exception e) {
+            throw new RuntimeException(String.format(
+                "Configuration property nts.helper.location.deserializer class %s can not be loaded.",
+                deserializer
             ));
         }
     }

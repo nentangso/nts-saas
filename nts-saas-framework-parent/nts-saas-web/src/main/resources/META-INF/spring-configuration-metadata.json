@@ -42,8 +42,15 @@
     {
       "name": "nts.helper.location.provider",
       "type": "java.lang.String",
-      "defaultValue": "keycloak",
-      "description": "The location helper provider name. Available values is keycloak.",
+      "defaultValue": "org.nentangso.core.service.helper.location.NtsHttpLocationProvider",
+      "description": "The location helper provider name. Available values is org.nentangso.core.service.helper.location.NtsRestLocationProvider, org.nentangso.core.service.helper.location.NtsKeycloakLocationProvider.",
+      "sourceType": "org.nentangso.core.config.NtsProperties"
+    },
+    {
+      "name": "nts.helper.location.deserializer",
+      "type": "java.lang.String",
+      "defaultValue": "org.nentangso.core.service.helper.location.NtsLocationBitSetDeserializer",
+      "description": "The location helper deserializer name. Available values is org.nentangso.core.service.helper.location.NtsBitSetLocationDeserializer.",
       "sourceType": "org.nentangso.core.config.NtsProperties"
     },
     {
@@ -85,15 +92,35 @@
       "sourceType": "org.nentangso.core.config.NtsKeycloakLocationProperties"
     },
     {
-      "name": "nts.helper.location.keycloak.bit-set-claim",
+      "name": "nts.helper.location.rest.api-base-url",
       "type": "java.lang.String",
-      "description": "The name of claim that present granted location ids in format of bitset. The bit 0 present grant all locations. The bit {number} present location with id = {number}.",
-      "sourceType": "org.nentangso.core.config.NtsKeycloakLocationProperties"
+      "defaultValue": "http://localhost:8080",
+      "description": "The list of custom attribute keys. The key must match with client role attribute key."
+    },
+    {
+      "name": "nts.helper.location.rest.get-locations.uri",
+      "type": "java.lang.String",
+      "defaultValue": "/api/locations",
+      "description": "The list of custom attribute keys. The key must match with client role attribute key."
+    },
+    {
+      "name": "nts.helper.location.bitset.claim",
+      "type": "java.lang.String",
+      "description": "The name of claim that present granted location ids in format of bitset. The bit 0 present grant all locations. The bit {number} present location with id = {number}."
     }
   ],
   "hints": [
     {
       "name": "nts.helper.location.provider",
+      "values": [],
+      "providers": [
+        {
+          "name": "class-reference"
+        }
+      ]
+    },
+    {
+      "name": "nts.helper.location.deserializer",
       "values": [],
       "providers": [
         {

@@ -1,4 +1,4 @@
-package org.nentangso.core.service.provider;
+package org.nentangso.core.service.helper.location;
 
 import org.nentangso.core.config.NtsProperties;
 import org.nentangso.core.service.dto.NtsDefaultLocationDTO;

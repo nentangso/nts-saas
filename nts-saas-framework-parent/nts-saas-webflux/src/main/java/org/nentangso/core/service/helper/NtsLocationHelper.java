@@ -1,8 +1,9 @@
 package org.nentangso.core.service.helper;
 
 import org.nentangso.core.service.dto.NtsLocationDTO;
-import org.nentangso.core.service.provider.NtsLocationProvider;
-import org.nentangso.core.service.provider.NtsLocationProviderFactory;
+import org.nentangso.core.service.helper.location.NtsLocationDeserializer;
+import org.nentangso.core.service.helper.location.NtsLocationProvider;
+import org.nentangso.core.service.helper.location.NtsLocationProviderFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -18,9 +19,11 @@ import java.util.*;
 @Service
 public class NtsLocationHelper {
     private final NtsLocationProvider<? extends NtsLocationDTO> locationProvider;
+    private final NtsLocationDeserializer locationDeserializer;
 
     public NtsLocationHelper(NtsLocationProviderFactory locationProviderFactory) {
         this.locationProvider = locationProviderFactory.getLocationProvider();
+        this.locationDeserializer = locationProviderFactory.getLocationDeserializer();
     }
 
     public Mono<List<? extends NtsLocationDTO>> findAll() {
@@ -39,22 +42,22 @@ public class NtsLocationHelper {
     }
 
     public Mono<Set<Long>> getGrantedLocationIds() {
-        return locationProvider.getGrantedLocationIds();
+        return locationDeserializer.getGrantedLocationIds();
     }
 
     public Mono<Boolean> isGrantedAllLocations() {
-        return locationProvider.isGrantedAllLocations();
+        return locationDeserializer.isGrantedAllLocations();
     }
 
     public Mono<Boolean> isGrantedAnyLocations(Iterable<Long> ids) {
-        return locationProvider.isGrantedAnyLocations(ids);
+        return locationDeserializer.isGrantedAnyLocations(ids);
     }
 
     public Mono<Boolean> isGrantedAnyLocations(Long... ids) {
-        return locationProvider.isGrantedAnyLocations(ids);
+        return locationDeserializer.isGrantedAnyLocations(ids);
     }
 
     public Mono<Boolean> isGrantedLocation(@Min(1L) Long id) {
-        return locationProvider.isGrantedLocation(id);
+        return locationDeserializer.isGrantedLocation(id);
     }
 }
