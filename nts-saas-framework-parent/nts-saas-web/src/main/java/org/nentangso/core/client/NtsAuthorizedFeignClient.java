@@ -28,7 +28,7 @@ public @interface NtsAuthorizedFeignClient {
      * @see FeignClientsConfiguration for the defaults.
      */
     @AliasFor(annotation = FeignClient.class, attribute = "configuration")
-    Class<?>[] configuration() default NtsClientCredentialsInterceptedFeignConfiguration.class;
+    Class<?>[] configuration() default NtsAuthorizedFeignConfiguration.class;
 
     /**
      * An absolute URL or resolvable hostname (the protocol is optional).

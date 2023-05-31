@@ -1,6 +1,6 @@
 package org.nentangso.core.config;
 
-import org.nentangso.core.service.provider.NtsKeycloakLocationProvider;
+import org.nentangso.core.service.helper.location.NtsKeycloakLocationProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -26,8 +26,6 @@ public class NtsKeycloakLocationProperties implements Serializable {
     private String internalClientId = "";
 
     private final List<String> customAttributeKeys = new ArrayList<>();
-
-    private String bitSetClaim = "nlb";
 
     public String getClientRegistrationId() {
         return clientRegistrationId;
@@ -55,13 +53,5 @@ public class NtsKeycloakLocationProperties implements Serializable {
 
     public List<String> getCustomAttributeKeys() {
         return customAttributeKeys;
-    }
-
-    public String getBitSetClaim() {
-        return bitSetClaim;
-    }
-
-    public void setBitSetClaim(String bitSetClaim) {
-        this.bitSetClaim = bitSetClaim;
     }
 }

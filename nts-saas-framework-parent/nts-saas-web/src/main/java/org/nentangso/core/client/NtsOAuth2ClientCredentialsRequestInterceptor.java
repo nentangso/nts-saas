@@ -13,7 +13,7 @@ import org.springframework.security.oauth2.core.AbstractOAuth2Token;
 
 import java.util.Optional;
 
-public class NtsKeycloakRequestInterceptor implements RequestInterceptor {
+public class NtsOAuth2ClientCredentialsRequestInterceptor implements RequestInterceptor {
     // Using anonymous user principal as its S2S authentication
     public static final Authentication ANONYMOUS_USER_AUTHENTICATION = new AnonymousAuthenticationToken(
         "key",
@@ -24,7 +24,7 @@ public class NtsKeycloakRequestInterceptor implements RequestInterceptor {
     private final OAuth2AuthorizedClientManager authorizedClientManager;
     private final String clientRegistrationId;
 
-    public NtsKeycloakRequestInterceptor(OAuth2AuthorizedClientManager authorizedClientManager, String clientRegistrationId) {
+    public NtsOAuth2ClientCredentialsRequestInterceptor(OAuth2AuthorizedClientManager authorizedClientManager, String clientRegistrationId) {
         this.authorizedClientManager = authorizedClientManager;
         this.clientRegistrationId = clientRegistrationId;
     }

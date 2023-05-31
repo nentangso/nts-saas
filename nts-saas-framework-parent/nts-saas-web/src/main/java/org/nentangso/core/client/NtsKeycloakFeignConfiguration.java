@@ -14,7 +14,7 @@ public class NtsKeycloakFeignConfiguration {
         OAuth2AuthorizedClientManager authorizedClientManager,
         NtsKeycloakLocationProperties keycloakLocationProperties
     ) {
-        return new NtsKeycloakRequestInterceptor(
+        return new NtsOAuth2ClientCredentialsRequestInterceptor(
             authorizedClientManager,
             keycloakLocationProperties.getClientRegistrationId()
         );

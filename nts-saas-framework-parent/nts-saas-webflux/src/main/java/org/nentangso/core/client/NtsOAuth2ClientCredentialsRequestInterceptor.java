@@ -13,7 +13,7 @@ import reactivefeign.client.ReactiveHttpRequestInterceptor;
 import reactivefeign.utils.MultiValueMapUtils;
 import reactor.core.publisher.Mono;
 
-public class NtsKeycloakRequestInterceptor implements ReactiveHttpRequestInterceptor {
+public class NtsOAuth2ClientCredentialsRequestInterceptor implements ReactiveHttpRequestInterceptor {
     // Using anonymous user principal as its S2S authentication
     public static final Authentication ANONYMOUS_USER_AUTHENTICATION = new AnonymousAuthenticationToken(
         "key",
@@ -24,7 +24,7 @@ public class NtsKeycloakRequestInterceptor implements ReactiveHttpRequestInterce
     private final ReactiveOAuth2AuthorizedClientManager authorizedClientManager;
     private final String clientRegistrationId;
 
-    public NtsKeycloakRequestInterceptor(ReactiveOAuth2AuthorizedClientManager authorizedClientManager, String clientRegistrationId) {
+    public NtsOAuth2ClientCredentialsRequestInterceptor(ReactiveOAuth2AuthorizedClientManager authorizedClientManager, String clientRegistrationId) {
         this.authorizedClientManager = authorizedClientManager;
         this.clientRegistrationId = clientRegistrationId;
     }

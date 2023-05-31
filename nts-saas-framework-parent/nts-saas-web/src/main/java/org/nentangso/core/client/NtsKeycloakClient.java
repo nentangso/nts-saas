@@ -1,7 +1,7 @@
 package org.nentangso.core.client;
 
 import org.nentangso.core.client.vm.KeycloakClientRole;
-import org.nentangso.core.service.provider.NtsKeycloakLocationProvider;
+import org.nentangso.core.service.helper.location.NtsKeycloakLocationProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;

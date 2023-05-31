@@ -7,9 +7,14 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "nts")
 public class NtsProperties {
     private final HelperProperties helper = new HelperProperties();
+    private final ClientProperties client = new ClientProperties();
 
     public HelperProperties getHelper() {
         return helper;
+    }
+
+    public ClientProperties getClient() {
+        return client;
     }
 
     public static class HelperProperties {
@@ -23,6 +28,8 @@ public class NtsProperties {
             private boolean enabled = false;
 
             private String provider;
+
+            private String deserializer;
 
             private final CacheProperties cache = new CacheProperties();
 
@@ -40,6 +47,14 @@ public class NtsProperties {
 
             public void setProvider(String provider) {
                 this.provider = provider;
+            }
+
+            public String getDeserializer() {
+                return deserializer;
+            }
+
+            public void setDeserializer(String deserializer) {
+                this.deserializer = deserializer;
             }
 
             public CacheProperties getCache() {
@@ -65,6 +80,26 @@ public class NtsProperties {
                 public void setKeyPrefix(String keyPrefix) {
                     this.keyPrefix = keyPrefix;
                 }
+            }
+        }
+    }
+
+    public static class ClientProperties {
+        private final AuthorizedProperties authorized = new AuthorizedProperties();
+
+        public AuthorizedProperties getAuthorized() {
+            return authorized;
+        }
+
+        public static class AuthorizedProperties {
+            private String clientRegistrationId = "nts-client-authorized";
+
+            public String getClientRegistrationId() {
+                return clientRegistrationId;
+            }
+
+            public void setClientRegistrationId(String clientRegistrationId) {
+                this.clientRegistrationId = clientRegistrationId;
             }
         }
     }

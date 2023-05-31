@@ -1,10 +1,9 @@
-package org.nentangso.core.service.provider;
+package org.nentangso.core.service.helper.location;
 
 import org.apache.commons.lang3.StringUtils;
 import org.nentangso.core.client.NtsKeycloakClient;
 import org.nentangso.core.client.vm.KeycloakClientRole;
 import org.nentangso.core.config.NtsKeycloakLocationProperties;
-import org.nentangso.core.security.NtsSecurityUtils;
 import org.nentangso.core.service.dto.NtsAttributeDTO;
 import org.nentangso.core.service.dto.NtsDefaultAttributeDTO;
 import org.nentangso.core.service.dto.NtsDefaultLocationDTO;
@@ -12,15 +11,12 @@ import org.nentangso.core.service.dto.NtsLocationDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
-import javax.validation.constraints.Min;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 @ConditionalOnProperty(
     prefix = "nts.helper.location",
@@ -31,7 +27,7 @@ import java.util.stream.StreamSupport;
 public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefaultLocationDTO> {
     private static final Logger log = LoggerFactory.getLogger(NtsKeycloakLocationProvider.class);
 
-    public static final String PROVIDER_NAME = "org.nentangso.core.service.provider.NtsKeycloakLocationProvider";
+    public static final String PROVIDER_NAME = "org.nentangso.core.service.helper.location.NtsKeycloakLocationProvider";
     public static final String ATTRIBUTE_ACTIVE = "active";
     public static final String ATTRIBUTE_CREATED_AT = "createdAt";
     public static final String ATTRIBUTE_UPDATED_AT = "updatedAt";
@@ -70,28 +66,19 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefau
     }
 
     @Override
-    public Map<Long, NtsDefaultLocationDTO> findAll() {
-        Map<Long, NtsDefaultLocationDTO> cacheLocations = locationCacheable.getCacheLocations();
-        if (cacheLocations != null && !cacheLocations.isEmpty()) {
-            return cacheLocations;
-        }
-        String clientId = keycloakLocationProperties.getInternalClientId();
-        ResponseEntity<List<KeycloakClientRole>> response = keycloakClient.findClientRoles(clientId, false);
-        if (!response.getStatusCode().is2xxSuccessful() || !response.hasBody()) {
-            log.error("Get keycloak client roles of client {} error, response={}", clientId, response);
-            return Collections.emptyMap();
-        }
-        Map<Long, NtsDefaultLocationDTO> locations = toLocations(response.getBody())
-            .stream()
-            .collect(Collectors.toMap(NtsDefaultLocationDTO::getId, v -> v));
-        locationCacheable.setCacheLocations(locations);
-        return locations;
+    public Mono<Map<Long, NtsDefaultLocationDTO>> findAll() {
+        return locationCacheable.getCacheLocations()
+            .switchIfEmpty(Mono.defer(() -> {
+                String clientId = keycloakLocationProperties.getInternalClientId();
+                return keycloakClient.findClientRoles(clientId, false)
+                    .map(this::toLocations)
+                    .map(items -> items.stream().collect(Collectors.toMap(NtsDefaultLocationDTO::getId, v -> v)))
+                    .flatMap(locationCacheable::setCacheLocations);
+            }));
     }
 
-    private List<NtsDefaultLocationDTO> toLocations(List<KeycloakClientRole> clientRoles) {
-        return Optional.ofNullable(clientRoles)
-            .orElseGet(Collections::emptyList)
-            .stream()
+    private List<NtsDefaultLocationDTO> toLocations(Collection<KeycloakClientRole> clientRoles) {
+        return clientRoles.stream()
             .map(this::toLocation)
             .collect(Collectors.toList());
     }
@@ -167,85 +154,14 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefau
     }
 
     @Override
-    public Set<Long> findAllIds() {
+    public Mono<Set<Long>> findAllIds() {
         return findAll()
-            .keySet();
+            .map(Map::keySet);
     }
 
     @Override
-    public Optional<NtsDefaultLocationDTO> findById(final Long id) {
-        NtsDefaultLocationDTO value = findAll()
-            .getOrDefault(id, null);
-        return Optional.ofNullable(value);
-    }
-
-    @Override
-    public Set<Long> getGrantedLocationIds() {
-        BitSet bitSet = getCurrentUserLocationBitSet();
-        if (isGrantedAllLocations(bitSet)) {
-            return findAllIds();
-        }
-        if (bitSet.length() <= 1) {
-            return Collections.emptySet();
-        }
-        final Set<Long> locationIds = new LinkedHashSet<>();
-        for (int i = 1; i < bitSet.length(); i++) {
-            if (!bitSet.get(i)) {
-                continue;
-            }
-            locationIds.add(Integer.toUnsignedLong(i));
-        }
-        return locationIds;
-    }
-
-    private BitSet getCurrentUserLocationBitSet() {
-        return NtsSecurityUtils.getCurrentUserClaim(keycloakLocationProperties.getBitSetClaim())
-            .map(this::parseBitSet)
-            .orElseGet(BitSet::new);
-    }
-
-    private BitSet parseBitSet(Object input) {
-        if (input instanceof String) {
-            byte[] bytes = Base64.getDecoder().decode((String) input);
-            return BitSet.valueOf(bytes);
-        }
-        return new BitSet();
-    }
-
-    @Override
-    public boolean isGrantedAllLocations() {
-        BitSet bitSet = getCurrentUserLocationBitSet();
-        return isGrantedAllLocations(bitSet);
-    }
-
-    private boolean isGrantedAllLocations(BitSet bitSet) {
-        return bitSet.length() > 0 && bitSet.get(0);
-    }
-
-    @Override
-    public boolean isGrantedAnyLocations(Iterable<Long> ids) {
-        BitSet bitSet = getCurrentUserLocationBitSet();
-        return StreamSupport.stream(ids.spliterator(), false)
-            .anyMatch(id -> isGrantedLocation(bitSet, id));
-    }
-
-    @Override
-    public boolean isGrantedAnyLocations(Long... ids) {
-        Iterable<Long> it = Stream.of(ids).collect(Collectors.toSet());
-        return isGrantedAnyLocations(it);
-    }
-
-    @Override
-    public boolean isGrantedLocation(@Min(1L) Long id) {
-        BitSet bitSet = getCurrentUserLocationBitSet();
-        return isGrantedLocation(bitSet, id);
-    }
-
-    private boolean isGrantedLocation(BitSet bitSet, Long id) {
-        if (id == null || id <= 0) {
-            return false;
-        }
-        return isGrantedAllLocations(bitSet)
-            || (id.intValue() < bitSet.length() && bitSet.get(id.intValue()));
+    public Mono<NtsDefaultLocationDTO> findById(final Long id) {
+        return findAll()
+            .flatMap(f -> Mono.justOrEmpty(f.getOrDefault(id, null)));
     }
 }
