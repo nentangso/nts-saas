@@ -1,6 +1,12 @@
 {
   "groups": [
     {
+      "name": "nts",
+      "type": "org.nentangso.core.config.NtsProperties",
+      "sourceType": "org.nentangso.core.config.NtsProperties",
+      "description": "Config nts libs"
+    },
+    {
       "name": "nts-keycloak-location",
       "type": "org.nentangso.core.config.NtsKeycloakLocationProperties",
       "sourceType": "org.nentangso.core.config.NtsKeycloakLocationProperties",
@@ -30,13 +36,28 @@
       "name": "nts.helper.location.enabled",
       "type": "java.lang.Boolean",
       "defaultValue": false,
-      "description": "If true then the NtsLocationHelper bean is created."
+      "description": "If true then the NtsLocationHelper bean is created.",
+      "sourceType": "org.nentangso.core.config.NtsProperties"
     },
     {
       "name": "nts.helper.location.provider",
       "type": "java.lang.String",
       "defaultValue": "keycloak",
-      "description": "The location helper provider name. Available values is keycloak."
+      "description": "The location helper provider name. Available values is keycloak.",
+      "sourceType": "org.nentangso.core.config.NtsProperties"
+    },
+    {
+      "name": "nts.helper.location.cache.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": "true",
+      "description": "Enable redis cache or not, default true",
+      "sourceType": "org.nentangso.core.config.NtsProperties"
+    },
+    {
+      "name": "nts.helper.location.cache.key-prefix",
+      "type": "java.lang.String",
+      "description": "The prefix of redis cache keys",
+      "sourceType": "org.nentangso.core.config.NtsProperties"
     },
     {
       "name": "nts.helper.location.keycloak.client-registration-id",
@@ -64,12 +85,6 @@
       "sourceType": "org.nentangso.core.config.NtsKeycloakLocationProperties"
     },
     {
-      "name": "nts.helper.location.keycloak.cache-key-prefix",
-      "type": "java.lang.String",
-      "description": "The prefix of redis cache keys",
-      "sourceType": "org.nentangso.core.config.NtsKeycloakLocationProperties"
-    },
-    {
       "name": "nts.helper.location.keycloak.bit-set-claim",
       "type": "java.lang.String",
       "description": "The name of claim that present granted location ids in format of bitset. The bit 0 present grant all locations. The bit {number} present location with id = {number}.",
@@ -79,10 +94,10 @@
   "hints": [
     {
       "name": "nts.helper.location.provider",
-      "values": [
+      "values": [],
+      "providers": [
         {
-          "value": "keycloak",
-          "description": "Use keycloak client roles to configure locations. The max location id must less than 1024."
+          "name": "class-reference"
         }
       ]
     }
