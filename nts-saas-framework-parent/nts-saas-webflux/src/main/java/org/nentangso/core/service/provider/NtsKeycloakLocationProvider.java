@@ -12,7 +12,6 @@ import org.nentangso.core.service.dto.NtsLocationDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.data.redis.core.ReactiveRedisOperations;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -33,9 +32,7 @@ import java.util.stream.StreamSupport;
 public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefaultLocationDTO> {
     private static final Logger log = LoggerFactory.getLogger(NtsKeycloakLocationProvider.class);
 
-    public static boolean disableCacheForTests = false;
-
-    public static final String PROVIDER_NAME = "keycloak";
+    public static final String PROVIDER_NAME = "org.nentangso.core.service.provider.NtsKeycloakLocationProvider";
     public static final String ATTRIBUTE_ACTIVE = "active";
     public static final String ATTRIBUTE_CREATED_AT = "createdAt";
     public static final String ATTRIBUTE_UPDATED_AT = "updatedAt";
@@ -55,12 +52,12 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefau
 
     private final NtsKeycloakLocationProperties keycloakLocationProperties;
     private final NtsKeycloakClient keycloakClient;
-    private final ReactiveRedisOperations<String, Map<Long, NtsDefaultLocationDTO>> locationsRedisOps;
+    private final NtsDefaultLocationCacheable locationCacheable;
 
-    public NtsKeycloakLocationProvider(NtsKeycloakLocationProperties keycloakLocationProperties, NtsKeycloakClient keycloakClient, ReactiveRedisOperations<String, Map<Long, NtsDefaultLocationDTO>> locationsRedisOps) {
+    public NtsKeycloakLocationProvider(NtsKeycloakLocationProperties keycloakLocationProperties, NtsKeycloakClient keycloakClient, NtsDefaultLocationCacheable locationCacheable) {
         this.keycloakLocationProperties = keycloakLocationProperties;
         this.keycloakClient = keycloakClient;
-        this.locationsRedisOps = locationsRedisOps;
+        this.locationCacheable = locationCacheable;
         validateKeycloakProperties();
     }
 
@@ -75,34 +72,14 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefau
 
     @Override
     public Mono<Map<Long, NtsDefaultLocationDTO>> findAll() {
-        return getCacheLocations()
+        return locationCacheable.getCacheLocations()
             .switchIfEmpty(Mono.defer(() -> {
                 String clientId = keycloakLocationProperties.getInternalClientId();
                 return keycloakClient.findClientRoles(clientId, false)
                     .map(this::toLocations)
                     .map(items -> items.stream().collect(Collectors.toMap(NtsDefaultLocationDTO::getId, v -> v)))
-                    .flatMap(this::setCacheLocations);
+                    .flatMap(locationCacheable::setCacheLocations);
             }));
-    }
-
-    private Mono<Map<Long, NtsDefaultLocationDTO>> getCacheLocations() {
-        if (disableCacheForTests) {
-            return Mono.empty();
-        }
-        final String cacheKey = generateCacheKey();
-        return locationsRedisOps.opsForValue().get(cacheKey);
-    }
-
-    private String generateCacheKey() {
-        return keycloakLocationProperties.getCacheKeyPrefix() + "locations_by_id";
-    }
-
-    private Mono<Map<Long, NtsDefaultLocationDTO>> setCacheLocations(Map<Long, NtsDefaultLocationDTO> items) {
-        if (disableCacheForTests) {
-            return Mono.just(items);
-        }
-        final String cacheKey = generateCacheKey();
-        return locationsRedisOps.opsForValue().set(cacheKey, items).thenReturn(items);
     }
 
     private List<NtsDefaultLocationDTO> toLocations(Collection<KeycloakClientRole> clientRoles) {

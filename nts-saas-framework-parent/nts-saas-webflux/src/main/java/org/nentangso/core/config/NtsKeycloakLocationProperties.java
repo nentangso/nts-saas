@@ -27,8 +27,6 @@ public class NtsKeycloakLocationProperties implements Serializable {
 
     private final List<String> customAttributeKeys = new ArrayList<>();
 
-    private String cacheKeyPrefix = "nts_helper_location__";
-
     private String bitSetClaim = "nlb";
 
     public String getClientRegistrationId() {
@@ -57,14 +55,6 @@ public class NtsKeycloakLocationProperties implements Serializable {
 
     public List<String> getCustomAttributeKeys() {
         return customAttributeKeys;
-    }
-
-    public String getCacheKeyPrefix() {
-        return cacheKeyPrefix;
-    }
-
-    public void setCacheKeyPrefix(String cacheKeyPrefix) {
-        this.cacheKeyPrefix = cacheKeyPrefix;
     }
 
     public String getBitSetClaim() {

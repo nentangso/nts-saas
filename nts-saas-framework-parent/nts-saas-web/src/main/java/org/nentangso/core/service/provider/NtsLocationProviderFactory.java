@@ -1,8 +1,7 @@
 package org.nentangso.core.service.provider;
 
-import org.apache.commons.lang3.StringUtils;
+import org.nentangso.core.config.NtsProperties;
 import org.nentangso.core.service.dto.NtsLocationDTO;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -19,19 +18,21 @@ public class NtsLocationProviderFactory {
 
     public NtsLocationProviderFactory(
         ApplicationContext applicationContext,
-        @Value("${nts.helper.location.provider:}") String provider
+        NtsProperties ntsProperties
     ) {
         this.applicationContext = applicationContext;
-        this.provider = provider;
+        this.provider = ntsProperties.getHelper().getLocation().getProvider();
     }
 
     public NtsLocationProvider<? extends NtsLocationDTO> getLocationProvider() {
-        if (StringUtils.equals(provider, NtsKeycloakLocationProvider.PROVIDER_NAME)) {
-            return applicationContext.getBean(NtsKeycloakLocationProvider.class);
+        try {
+            Class<?> clazz = Class.forName(provider);
+            return (NtsLocationProvider<? extends NtsLocationDTO>) applicationContext.getBean(clazz);
+        } catch (Exception e) {
+            throw new RuntimeException(String.format(
+                "Configuration property nts.helper.location.provider class %s can not be loaded.",
+                provider
+            ));
         }
-        throw new RuntimeException(String.format(
-            "Configuration property nts.helper.location.provider must be one of supported values %s",
-            StringUtils.joinWith(", ", NtsKeycloakLocationProvider.PROVIDER_NAME)
-        ));
     }
 }

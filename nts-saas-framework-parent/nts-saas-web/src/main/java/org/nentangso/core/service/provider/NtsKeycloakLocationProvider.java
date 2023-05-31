@@ -1,6 +1,5 @@
 package org.nentangso.core.service.provider;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.nentangso.core.client.NtsKeycloakClient;
 import org.nentangso.core.client.vm.KeycloakClientRole;
@@ -10,17 +9,12 @@ import org.nentangso.core.service.dto.NtsAttributeDTO;
 import org.nentangso.core.service.dto.NtsDefaultAttributeDTO;
 import org.nentangso.core.service.dto.NtsDefaultLocationDTO;
 import org.nentangso.core.service.dto.NtsLocationDTO;
-import org.redisson.api.RBucket;
-import org.redisson.api.RedissonClient;
-import org.redisson.codec.JsonJacksonCodec;
-import org.redisson.jcache.configuration.RedissonConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.cache.configuration.Configuration;
 import javax.validation.constraints.Min;
 import java.time.Instant;
 import java.util.*;
@@ -37,9 +31,7 @@ import java.util.stream.StreamSupport;
 public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefaultLocationDTO> {
     private static final Logger log = LoggerFactory.getLogger(NtsKeycloakLocationProvider.class);
 
-    public static boolean disableCacheForTests = false;
-
-    public static final String PROVIDER_NAME = "keycloak";
+    public static final String PROVIDER_NAME = "org.nentangso.core.service.provider.NtsKeycloakLocationProvider";
     public static final String ATTRIBUTE_ACTIVE = "active";
     public static final String ATTRIBUTE_CREATED_AT = "createdAt";
     public static final String ATTRIBUTE_UPDATED_AT = "updatedAt";
@@ -59,14 +51,12 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefau
 
     private final NtsKeycloakLocationProperties keycloakLocationProperties;
     private final NtsKeycloakClient keycloakClient;
-    private final RedissonClient redissonClient;
-    private final ObjectMapper objectMapper;
+    private final NtsDefaultLocationCacheable locationCacheable;
 
-    public NtsKeycloakLocationProvider(NtsKeycloakLocationProperties keycloakLocationProperties, NtsKeycloakClient keycloakClient, Configuration<Object, Object> jcacheConfiguration, ObjectMapper objectMapper) {
+    public NtsKeycloakLocationProvider(NtsKeycloakLocationProperties keycloakLocationProperties, NtsKeycloakClient keycloakClient, NtsDefaultLocationCacheable locationCacheable) {
         this.keycloakLocationProperties = keycloakLocationProperties;
         this.keycloakClient = keycloakClient;
-        this.redissonClient = ((RedissonConfiguration<?, ?>) jcacheConfiguration).getRedisson();
-        this.objectMapper = objectMapper;
+        this.locationCacheable = locationCacheable;
         validateKeycloakProperties();
     }
 
@@ -81,7 +71,7 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefau
 
     @Override
     public Map<Long, NtsDefaultLocationDTO> findAll() {
-        Map<Long, NtsDefaultLocationDTO> cacheLocations = getCacheLocations();
+        Map<Long, NtsDefaultLocationDTO> cacheLocations = locationCacheable.getCacheLocations();
         if (cacheLocations != null && !cacheLocations.isEmpty()) {
             return cacheLocations;
         }
@@ -94,30 +84,8 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefau
         Map<Long, NtsDefaultLocationDTO> locations = toLocations(response.getBody())
             .stream()
             .collect(Collectors.toMap(NtsDefaultLocationDTO::getId, v -> v));
-        setCacheLocations(locations);
+        locationCacheable.setCacheLocations(locations);
         return locations;
-    }
-
-    private Map<Long, NtsDefaultLocationDTO> getCacheLocations() {
-        if (disableCacheForTests) {
-            return null;
-        }
-        final String cacheKey = generateCacheKey();
-        RBucket<Map<Long, NtsDefaultLocationDTO>> bucket = redissonClient.getBucket(cacheKey, new JsonJacksonCodec(objectMapper));
-        return bucket.get();
-    }
-
-    private String generateCacheKey() {
-        return keycloakLocationProperties.getCacheKeyPrefix() + "locations_by_id";
-    }
-
-    private void setCacheLocations(Map<Long, NtsDefaultLocationDTO> locations) {
-        if (disableCacheForTests) {
-            return;
-        }
-        final String cacheKey = generateCacheKey();
-        RBucket<Map<Long, NtsDefaultLocationDTO>> bucket = redissonClient.getBucket(cacheKey, new JsonJacksonCodec(objectMapper));
-        bucket.set(locations);
     }
 
     private List<NtsDefaultLocationDTO> toLocations(List<KeycloakClientRole> clientRoles) {
@@ -231,7 +199,7 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefau
     }
 
     private BitSet getCurrentUserLocationBitSet() {
-        return NtsSecurityUtils.getCurrentUserClaim(keycloakLocationProperties.getBitsetClaim())
+        return NtsSecurityUtils.getCurrentUserClaim(keycloakLocationProperties.getBitSetClaim())
             .map(this::parseBitSet)
             .orElseGet(BitSet::new);
     }
