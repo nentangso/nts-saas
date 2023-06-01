@@ -6,6 +6,8 @@ package org.nentangso.core.service.dto;
 public interface NtsAttributeDTO {
     /**
      * Key or name of the attribute.
+     *
+     * @return the key
      */
     default String getKey() {
         return null;
@@ -13,6 +15,8 @@ public interface NtsAttributeDTO {
 
     /**
      * Value of the attribute.
+     *
+     * @return the value
      */
     default String getValue() {
         return null;
