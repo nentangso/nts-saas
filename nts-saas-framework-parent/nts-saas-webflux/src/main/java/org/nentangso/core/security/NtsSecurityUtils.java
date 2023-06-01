@@ -3,6 +3,7 @@ package org.nentangso.core.security;
 import org.apache.commons.lang3.StringUtils;
 import org.nentangso.core.config.NtsProperties;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -28,6 +29,7 @@ public final class NtsSecurityUtils implements InitializingBean {
     private final String rolePrefix;
     private final boolean reverseOrderOfDisplayName;
 
+    @Autowired
     public NtsSecurityUtils(NtsProperties ntsProperties) {
         this.rolesClaim = ntsProperties.getSecurity().getOauth2().getRolesClaim();
         this.rolePrefix = ntsProperties.getSecurity().getOauth2().getRolePrefix();

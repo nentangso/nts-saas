@@ -2,9 +2,6 @@ package org.nentangso.core.service.helper.location;
 
 import org.nentangso.core.security.NtsSecurityUtils;
 import org.nentangso.core.service.dto.NtsLocationDTO;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -17,23 +14,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-@ConditionalOnProperty(
-    prefix = "nts.helper.location",
-    name = "deserializer",
-    havingValue = NtsBitSetLocationDeserializer.DESERIALIZER_NAME
-)
-@Service
 public class NtsBitSetLocationDeserializer implements NtsLocationDeserializer {
     public static final String DESERIALIZER_NAME = "org.nentangso.core.service.helper.location.NtsBitSetLocationDeserializer";
 
     private final NtsLocationProvider<? extends NtsLocationDTO> locationProvider;
     private final String bitSetClaim;
 
-    public NtsBitSetLocationDeserializer(
-        NtsLocationProviderFactory locationProviderFactory,
-        @Value("${nts.helper.location.bitset.claim:nlb}") String bitSetClaim
-    ) {
-        this.locationProvider = locationProviderFactory.getLocationProvider();
+    public NtsBitSetLocationDeserializer(NtsLocationProvider<? extends NtsLocationDTO> locationProvider, String bitSetClaim) {
+        this.locationProvider = locationProvider;
         this.bitSetClaim = bitSetClaim;
     }
 

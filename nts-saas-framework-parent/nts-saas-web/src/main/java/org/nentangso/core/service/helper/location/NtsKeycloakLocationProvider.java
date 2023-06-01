@@ -10,20 +10,12 @@ import org.nentangso.core.service.dto.NtsDefaultLocationDTO;
 import org.nentangso.core.service.dto.NtsLocationDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@ConditionalOnProperty(
-    prefix = "nts.helper.location",
-    name = "provider",
-    havingValue = NtsKeycloakLocationProvider.PROVIDER_NAME
-)
-@Service
 public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefaultLocationDTO> {
     private static final Logger log = LoggerFactory.getLogger(NtsKeycloakLocationProvider.class);
 
@@ -46,10 +38,10 @@ public class NtsKeycloakLocationProvider implements NtsLocationProvider<NtsDefau
     public static final String ATTRIBUTE_ADDRESS_VERIFIED = "addressVerified";
 
     private final NtsKeycloakLocationProperties keycloakLocationProperties;
-    private final NtsKeycloakClient keycloakClient;
     private final NtsDefaultLocationCacheable locationCacheable;
+    private final NtsKeycloakClient keycloakClient;
 
-    public NtsKeycloakLocationProvider(NtsKeycloakLocationProperties keycloakLocationProperties, NtsKeycloakClient keycloakClient, NtsDefaultLocationCacheable locationCacheable) {
+    public NtsKeycloakLocationProvider(NtsKeycloakLocationProperties keycloakLocationProperties, NtsDefaultLocationCacheable locationCacheable, NtsKeycloakClient keycloakClient) {
         this.keycloakLocationProperties = keycloakLocationProperties;
         this.keycloakClient = keycloakClient;
         this.locationCacheable = locationCacheable;
