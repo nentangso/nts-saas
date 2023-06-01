@@ -6,8 +6,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "nts")
 public class NtsProperties {
+    private final SecurityProperties security = new SecurityProperties();
     private final HelperProperties helper = new HelperProperties();
     private final ClientProperties client = new ClientProperties();
+
+    public SecurityProperties getSecurity() {
+        return security;
+    }
 
     public HelperProperties getHelper() {
         return helper;
@@ -15,6 +20,44 @@ public class NtsProperties {
 
     public ClientProperties getClient() {
         return client;
+    }
+
+    public static class SecurityProperties {
+        private final OAuth2Properties oauth2 = new OAuth2Properties();
+
+        public OAuth2Properties getOauth2() {
+            return oauth2;
+        }
+
+        public static class OAuth2Properties {
+            private String rolesClaim = "roles";
+            private String rolePrefix = "ROLE_";
+            private boolean reverseOrderOfDisplayName = true;
+
+            public String getRolesClaim() {
+                return rolesClaim;
+            }
+
+            public void setRolesClaim(String rolesClaim) {
+                this.rolesClaim = rolesClaim;
+            }
+
+            public String getRolePrefix() {
+                return rolePrefix;
+            }
+
+            public void setRolePrefix(String rolePrefix) {
+                this.rolePrefix = rolePrefix;
+            }
+
+            public boolean isReverseOrderOfDisplayName() {
+                return reverseOrderOfDisplayName;
+            }
+
+            public void setReverseOrderOfDisplayName(boolean reverseOrderOfDisplayName) {
+                this.reverseOrderOfDisplayName = reverseOrderOfDisplayName;
+            }
+        }
     }
 
     public static class HelperProperties {
