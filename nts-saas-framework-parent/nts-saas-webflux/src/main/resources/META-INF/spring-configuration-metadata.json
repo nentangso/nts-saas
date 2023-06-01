@@ -15,19 +15,19 @@
   ],
   "properties": [
     {
-      "name": "nts.security.oauth2.client.configuration.roles-claim",
+      "name": "nts.security.oauth2.roles-claim",
       "type": "java.lang.String",
       "defaultValue": "roles",
       "description": "The claim name in JWT access token, that hold granted roles/groups of current user."
     },
     {
-      "name": "nts.security.oauth2.client.configuration.role-prefix",
+      "name": "nts.security.oauth2.role-prefix",
       "type": "java.lang.String",
       "defaultValue": "ROLE_",
       "description": "The role/group prefix, filter only the authority that starts with the prefix."
     },
     {
-      "name": "nts.security.oauth2.client.configuration.reverse-order-of-display-name",
+      "name": "nts.security.oauth2.reverse-order-of-display-name",
       "type": "java.lang.Boolean",
       "defaultValue": true,
       "description": "If true the display name is {lastName} {firstName}, else the display name is {firstName} {lastName}"
