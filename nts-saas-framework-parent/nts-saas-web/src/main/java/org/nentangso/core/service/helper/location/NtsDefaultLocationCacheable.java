@@ -6,25 +6,17 @@ import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
 import org.redisson.codec.SerializationCodec;
 import org.redisson.jcache.configuration.RedissonConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
 
 import javax.cache.configuration.Configuration;
 import java.util.Map;
 
-@ConditionalOnProperty(
-    prefix = "nts.helper.location",
-    name = "enabled",
-    havingValue = "true"
-)
-@Component
 public class NtsDefaultLocationCacheable {
     private final NtsProperties ntsProperties;
     private final RedissonClient redissonClient;
 
     public NtsDefaultLocationCacheable(NtsProperties ntsProperties, Configuration<Object, Object> jcacheConfiguration) {
         this.ntsProperties = ntsProperties;
-        redissonClient = ((RedissonConfiguration<?, ?>) jcacheConfiguration).getRedisson();
+        this.redissonClient = ((RedissonConfiguration<?, ?>) jcacheConfiguration).getRedisson();
     }
 
     public Map<Long, NtsDefaultLocationDTO> getCacheLocations() {

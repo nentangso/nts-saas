@@ -4,20 +4,12 @@ import org.nentangso.core.client.NtsHelperLocationRestClient;
 import org.nentangso.core.service.dto.NtsDefaultLocationDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@ConditionalOnProperty(
-    prefix = "nts.helper.location",
-    name = "provider",
-    havingValue = NtsRestLocationProvider.PROVIDER_NAME
-)
-@Service
 public class NtsRestLocationProvider implements NtsLocationProvider<NtsDefaultLocationDTO> {
     private static final Logger log = LoggerFactory.getLogger(NtsRestLocationProvider.class);
 
