@@ -1,8 +1,8 @@
 package org.nentangso.core.security;
 
 import org.apache.commons.lang3.StringUtils;
+import org.nentangso.core.config.NtsProperties;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -28,11 +28,13 @@ public final class NtsSecurityUtils implements InitializingBean {
     private final String rolePrefix;
     private final boolean reverseOrderOfDisplayName;
 
-    public NtsSecurityUtils(
-        @Value("${nts.security.oauth2.client.configuration.roles-claim:roles}") String rolesClaim,
-        @Value("${nts.security.oauth2.client.configuration.role-prefix:ROLE_}") String rolePrefix,
-        @Value("${nts.security.oauth2.client.configuration.reverse-order-of-display-name:true}") boolean reverseOrderOfDisplayName
-    ) {
+    public NtsSecurityUtils(NtsProperties ntsProperties) {
+        this.rolesClaim = ntsProperties.getSecurity().getOauth2().getRolesClaim();
+        this.rolePrefix = ntsProperties.getSecurity().getOauth2().getRolePrefix();
+        this.reverseOrderOfDisplayName = ntsProperties.getSecurity().getOauth2().isReverseOrderOfDisplayName();
+    }
+
+    public NtsSecurityUtils(String rolesClaim, String rolePrefix, boolean reverseOrderOfDisplayName) {
         this.rolesClaim = rolesClaim;
         this.rolePrefix = rolePrefix;
         this.reverseOrderOfDisplayName = reverseOrderOfDisplayName;
