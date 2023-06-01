@@ -10,6 +10,8 @@ import java.util.List;
 public interface NtsLocationDTO {
     /**
      * The ID of the location.
+     *
+     * @return the id
      */
     default Long getId() {
         return null;
@@ -17,6 +19,8 @@ public interface NtsLocationDTO {
 
     /**
      * The name of the location.
+     *
+     * @return the name
      */
     default String getName() {
         return null;
@@ -24,6 +28,8 @@ public interface NtsLocationDTO {
 
     /**
      * The address of this location.
+     *
+     * @return the address
      */
     default NtsAddressDTO getAddress() {
         return null;
@@ -31,6 +37,8 @@ public interface NtsLocationDTO {
 
     /**
      * Whether the location address has been verified.
+     *
+     * @return the address
      */
     default boolean isAddressVerified() {
         return false;
@@ -38,6 +46,8 @@ public interface NtsLocationDTO {
 
     /**
      * Whether the location is active. If {@code true}, then the location can be used to sell products, stock inventory, and fulfill orders. Merchants can deactivate locations from the Shopify admin. Deactivated locations don't contribute to the shop's location limit.
+     *
+     * @return the location status
      */
     default boolean isActive() {
         return false;
@@ -45,6 +55,8 @@ public interface NtsLocationDTO {
 
     /**
      * The date and time (ISO 8601 format) when the location was created.
+     *
+     * @return the created at
      */
     default Instant getCreatedAt() {
         return null;
@@ -52,6 +64,8 @@ public interface NtsLocationDTO {
 
     /**
      * The date and time (ISO 8601 format) when the location was last updated.
+     *
+     * @return the updated at
      */
     default Instant getUpdatedAt() {
         return null;
@@ -59,15 +73,28 @@ public interface NtsLocationDTO {
 
     /**
      * The date and time (ISO 8601 format) that the location was deactivated at. For example, 3:30 pm on September 7, 2019 in the time zone of UTC (Universal Time Coordinated) is represented as "2019-09-07T15:50:00Z".
+     *
+     * @return the deactivated at
      */
     default Instant getDeactivatedAt() {
         return null;
     }
 
+    /**
+     * Represents a generic custom attribute.
+     *
+     * @param <A> the implementation of attribute
+     * @return the list of attributes
+     */
     default <A extends NtsAttributeDTO> List<A> getCustomAttributes() {
         return null;
     }
 
+    /**
+     * The builder
+     *
+     * @return the builder
+     */
     static NtsLocationDTOBuilder newDefaultBuilder() {
         return new NtsLocationDTOBuilder();
     }
