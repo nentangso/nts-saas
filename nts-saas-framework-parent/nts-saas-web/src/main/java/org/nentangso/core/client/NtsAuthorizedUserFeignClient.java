@@ -1,16 +1,15 @@
 package org.nentangso.core.client;
 
+import java.lang.annotation.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.core.annotation.AliasFor;
-
-import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
 @FeignClient
-public @interface NtsUserCookieRelayFeignClient {
+public @interface NtsAuthorizedUserFeignClient {
     @AliasFor(annotation = FeignClient.class, attribute = "name")
     String name() default "";
 
@@ -25,7 +24,7 @@ public @interface NtsUserCookieRelayFeignClient {
      * @see FeignClientsConfiguration for the defaults.
      */
     @AliasFor(annotation = FeignClient.class, attribute = "configuration")
-    Class<?>[] configuration() default NtsTokenRelayInterceptedFeignConfiguration.class;
+    Class<?>[] configuration() default NtsAuthorizedUserFeignConfiguration.class;
 
     /**
      * An absolute URL or resolvable hostname (the protocol is optional).
