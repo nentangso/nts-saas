@@ -1,57 +1,26 @@
 package org.nentangso.core.service.helper;
 
 import org.nentangso.core.service.dto.NtsLocationDTO;
-import org.nentangso.core.service.helper.location.NtsLocationDeserializer;
-import org.nentangso.core.service.helper.location.NtsLocationProvider;
 import reactor.core.publisher.Mono;
 
 import javax.validation.constraints.Min;
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 
-public class NtsLocationHelper {
-    private final NtsLocationProvider<? extends NtsLocationDTO> locationProvider;
-    private final NtsLocationDeserializer locationDeserializer;
+public interface NtsLocationHelper {
+    Mono<List<? extends NtsLocationDTO>> findAll();
 
-    public NtsLocationHelper(
-        NtsLocationProvider<? extends NtsLocationDTO> locationProvider,
-        NtsLocationDeserializer locationDeserializer
-    ) {
-        this.locationProvider = locationProvider;
-        this.locationDeserializer = locationDeserializer;
-    }
+    Mono<Set<Long>> findAlIds();
 
-    public Mono<List<? extends NtsLocationDTO>> findAll() {
-        return locationProvider.findAll()
-            .map(Map::values)
-            .map(ArrayList::new)
-            .map(Collections::unmodifiableList);
-    }
+    Mono<? extends NtsLocationDTO> findById(Long id);
 
-    private Mono<Set<Long>> findAlIds() {
-        return locationProvider.findAllIds();
-    }
+    Mono<Set<Long>> getGrantedLocationIds();
 
-    public Mono<? extends NtsLocationDTO> findById(Long id) {
-        return locationProvider.findById(id);
-    }
+    Mono<Boolean> isGrantedAllLocations();
 
-    public Mono<Set<Long>> getGrantedLocationIds() {
-        return locationDeserializer.getGrantedLocationIds();
-    }
+    Mono<Boolean> isGrantedAnyLocations(Iterable<Long> ids);
 
-    public Mono<Boolean> isGrantedAllLocations() {
-        return locationDeserializer.isGrantedAllLocations();
-    }
+    Mono<Boolean> isGrantedAnyLocations(Long... ids);
 
-    public Mono<Boolean> isGrantedAnyLocations(Iterable<Long> ids) {
-        return locationDeserializer.isGrantedAnyLocations(ids);
-    }
-
-    public Mono<Boolean> isGrantedAnyLocations(Long... ids) {
-        return locationDeserializer.isGrantedAnyLocations(ids);
-    }
-
-    public Mono<Boolean> isGrantedLocation(@Min(1L) Long id) {
-        return locationDeserializer.isGrantedLocation(id);
-    }
+    Mono<Boolean> isGrantedLocation(@Min(1L) Long id);
 }

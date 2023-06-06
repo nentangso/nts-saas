@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
     havingValue = "true"
 )
 @Configuration
-public class NtsLocationProviderAutoConfiguration {
+public class NtsLocationHelperAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public NtsDefaultLocationCacheable ntsDefaultLocationCacheable(
@@ -114,6 +114,6 @@ public class NtsLocationProviderAutoConfiguration {
         NtsLocationProvider<? extends NtsLocationDTO> locationProvider,
         NtsLocationDeserializer locationDeserializer
     ) {
-        return new NtsLocationHelper(locationProvider, locationDeserializer);
+        return new NtsDefaultLocationHelper(locationProvider, locationDeserializer);
     }
 }
