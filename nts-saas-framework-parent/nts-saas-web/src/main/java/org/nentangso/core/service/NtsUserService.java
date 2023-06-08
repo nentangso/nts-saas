@@ -33,16 +33,15 @@ import java.util.stream.Collectors;
 @Transactional
 @ConditionalOnMissingBean(name = "userService")
 public class NtsUserService {
-
     private final Logger log = LoggerFactory.getLogger(NtsUserService.class);
 
-    private final NtsUserRepository userRepository;
+    protected final NtsUserRepository userRepository;
 
-    private final NtsAuthorityRepository authorityRepository;
+    protected final NtsAuthorityRepository authorityRepository;
 
-    private final NtsUserMapper userMapper;
+    protected final NtsUserMapper userMapper;
 
-    private final CacheManager cacheManager;
+    protected final CacheManager cacheManager;
 
     public NtsUserService(NtsUserRepository userRepository, NtsAuthorityRepository authorityRepository, NtsUserMapper userMapper, CacheManager cacheManager) {
         this.userRepository = userRepository;
@@ -94,6 +93,7 @@ public class NtsUserService {
 
     /**
      * Gets a list of all the authorities.
+     *
      * @return a list of all the authorities.
      */
     @Transactional(readOnly = true)

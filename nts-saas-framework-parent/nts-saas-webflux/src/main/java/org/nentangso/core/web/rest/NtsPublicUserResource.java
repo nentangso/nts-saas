@@ -24,7 +24,7 @@ public class NtsPublicUserResource {
 
     private final Logger log = LoggerFactory.getLogger(NtsPublicUserResource.class);
 
-    private final NtsUserService userService;
+    protected final NtsUserService userService;
 
     public NtsPublicUserResource(NtsUserService userService) {
         this.userService = userService;

@@ -34,14 +34,13 @@ import java.util.stream.Collectors;
 @Service
 @ConditionalOnMissingBean(name = "userService")
 public class NtsUserService {
-
     private final Logger log = LoggerFactory.getLogger(NtsUserService.class);
 
-    private final NtsUserRepository userRepository;
+    protected final NtsUserRepository userRepository;
 
-    private final NtsAuthorityRepository authorityRepository;
+    protected final NtsAuthorityRepository authorityRepository;
 
-    private final NtsUserMapper userMapper;
+    protected final NtsUserMapper userMapper;
 
     public NtsUserService(NtsUserRepository userRepository, NtsAuthorityRepository authorityRepository, NtsUserMapper userMapper) {
         this.userRepository = userRepository;
