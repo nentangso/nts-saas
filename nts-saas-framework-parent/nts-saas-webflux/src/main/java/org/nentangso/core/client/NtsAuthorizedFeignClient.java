@@ -20,16 +20,12 @@ import org.springframework.core.annotation.AliasFor;
 import reactivefeign.client.ReactiveHttpRequestInterceptor;
 import reactivefeign.spring.config.ReactiveFeignClient;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Annotation for interfaces declaring that a REST client with that interface should be
  * created (e.g. for autowiring into another component).
- *
+ * <p>
  * patterned after org.springframework.cloud.netflix.feign.FeignClient
  */
 @Target(ElementType.TYPE)
@@ -38,68 +34,85 @@ import java.lang.annotation.Target;
 @ReactiveFeignClient
 public @interface NtsAuthorizedFeignClient {
 
-	/**
-	 * The name of the service with optional protocol prefix. Synonym for {@link #name()
-	 * name}. A name must be specified for all clients, whether or not a url is provided.
-	 * Can be specified as property key, eg: ${propertyKey}.
-	 */
-	@AliasFor(annotation = ReactiveFeignClient.class, attribute = "name")
-	String value() default "";
+    /**
+     * The name of the service with optional protocol prefix. Synonym for {@link #name()
+     * name}. A name must be specified for all clients, whether or not a url is provided.
+     * Can be specified as property key, eg: ${propertyKey}.
+     *
+     * @return the client name
+     */
+    @AliasFor(annotation = ReactiveFeignClient.class, attribute = "name")
+    String value() default "";
 
-	/**
-	 * The service id with optional protocol prefix. Synonym for {@link #value() value}.
-	 */
-	@AliasFor(annotation = ReactiveFeignClient.class, attribute = "value")
-	String name() default "";
+    /**
+     * The service id with optional protocol prefix. Synonym for {@link #value() value}.
+     *
+     * @return the client name
+     */
+    @AliasFor(annotation = ReactiveFeignClient.class, attribute = "value")
+    String name() default "";
 
-	/**
-	 * Sets the <code>@Qualifier</code> value for the feign client.
-	 */
-	String qualifier() default "";
+    /**
+     * Sets the <code>@Qualifier</code> value for the feign client.
+     *
+     * @return the qualifier name
+     */
+    String qualifier() default "";
 
-	/**
-	 * An absolute URL or resolvable hostname (the protocol is optional).
-	 */
-	String url() default "";
+    /**
+     * An absolute URL or resolvable hostname (the protocol is optional).
+     *
+     * @return the URL.
+     */
+    String url() default "";
 
-	/**
-	 * Whether 404s should be decoded instead of throwing FeignExceptions
-	 */
-	boolean decode404() default false;
+    /**
+     * Whether 404s should be decoded instead of throwing FeignExceptions
+     *
+     * @return true if 404s will be decoded; false otherwise.
+     */
+    boolean decode404() default false;
 
-	/**
-	 * A custom <code>@Configuration</code> for the feign client. Can contain override
-	 * <code>@Bean</code> definition for the pieces that make up the client, for instance
-	 * {@link ReactiveHttpRequestInterceptor}, {@link feign.Contract}.
-	 *
-	 * @see NtsAuthorizedFeignConfiguration for the defaults
-	 */
-	Class<?>[] configuration() default NtsAuthorizedFeignConfiguration.class;
+    /**
+     * A custom <code>@Configuration</code> for the feign client. Can contain override
+     * <code>@Bean</code> definition for the pieces that make up the client, for instance
+     * {@link ReactiveHttpRequestInterceptor}, {@link feign.Contract}.
+     *
+     * @return the custom {@code @Configuration} for the feign client.
+     * @see NtsAuthorizedFeignConfiguration for the defaults
+     */
+    Class<?>[] configuration() default NtsAuthorizedFeignConfiguration.class;
 
-	/**
-	 * Fallback class for the specified Feign client interface. The fallback class must
-	 * implement the interface annotated by this annotation and be a valid spring bean.
-	 */
-	Class<?> fallback() default void.class;
+    /**
+     * Fallback class for the specified Feign client interface. The fallback class must
+     * implement the interface annotated by this annotation and be a valid spring bean.
+     * @return the fallback class for the specified Feign client interface.
+     */
+    Class<?> fallback() default void.class;
 
-	/**
-	 * Define a fallback factory for the specified Feign client interface. The fallback
-	 * factory must produce instances of fallback classes that implement the interface
-	 * annotated by {@link NtsAuthorizedFeignClient}. The fallback factory must be a valid spring
-	 * bean.
-	 *
-	 */
-	Class<?> fallbackFactory() default void.class;
+    /**
+     * Define a fallback factory for the specified Feign client interface. The fallback
+     * factory must produce instances of fallback classes that implement the interface
+     * annotated by {@link NtsAuthorizedFeignClient}. The fallback factory must be a valid spring
+     * bean.
+     *
+     * @return the class
+     */
+    Class<?> fallbackFactory() default void.class;
 
-	/**
-	 * Path prefix to be used by all method-level mappings. Can be used with or without
-	 * <code>@RibbonClient</code>.
-	 */
-	String path() default "";
+    /**
+     * Path prefix to be used by all method-level mappings. Can be used with or without
+     * <code>@RibbonClient</code>.
+     *
+     * @return the path prefix to be used by all method-level mappings.
+     */
+    String path() default "";
 
-	/**
-	 * Whether to mark the feign proxy as a primary bean. Defaults to true.
-	 */
-	boolean primary() default true;
+    /**
+     * Whether to mark the feign proxy as a primary bean. Defaults to true.
+     *
+     * @return the boolean.
+     */
+    boolean primary() default true;
 
 }
