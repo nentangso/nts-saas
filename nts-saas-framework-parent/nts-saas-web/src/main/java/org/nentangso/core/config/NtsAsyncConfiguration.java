@@ -26,7 +26,7 @@ public class NtsAsyncConfiguration implements AsyncConfigurer {
 
     private final Logger log = LoggerFactory.getLogger(NtsAsyncConfiguration.class);
 
-    private final TaskExecutionProperties taskExecutionProperties;
+    protected final TaskExecutionProperties taskExecutionProperties;
 
     public NtsAsyncConfiguration(TaskExecutionProperties taskExecutionProperties) {
         this.taskExecutionProperties = taskExecutionProperties;
