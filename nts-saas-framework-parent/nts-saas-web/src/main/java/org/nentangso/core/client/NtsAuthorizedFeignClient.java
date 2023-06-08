@@ -45,12 +45,14 @@ public @interface NtsAuthorizedFeignClient {
     /**
      * Fallback class for the specified Feign client interface. The fallback class must
      * implement the interface annotated by this annotation and be a valid Spring bean.
+     *
      * @return the fallback class for the specified Feign client interface.
      */
     Class<?> fallback() default void.class;
 
     /**
      * Path prefix to be used by all method-level mappings.
+     *
      * @return the path prefix to be used by all method-level mappings.
      */
     String path() default "";
