@@ -141,7 +141,7 @@ public class NtsUserService {
         return authorityRepository.findAll().map(NtsAuthority::getName);
     }
 
-    private Mono<NtsUserEntity> syncUserWithIdP(Map<String, Object> details, NtsUserEntity user) {
+    protected Mono<NtsUserEntity> syncUserWithIdP(Map<String, Object> details, NtsUserEntity user) {
         // save authorities in to sync user roles/groups between IdP and JHipster's local database
         Collection<String> userAuthorities = user.getAuthorities().stream().map(NtsAuthority::getName).collect(Collectors.toList());
 
@@ -222,7 +222,7 @@ public class NtsUserService {
             .flatMap(u -> Mono.just(userMapper.userToAdminUserDTO(user)));
     }
 
-    private static NtsUserEntity getUser(Map<String, Object> details) {
+    protected NtsUserEntity getUser(Map<String, Object> details) {
         NtsUserEntity user = new NtsUserEntity();
         Boolean activated = Boolean.TRUE;
         String sub = String.valueOf(details.get("sub"));

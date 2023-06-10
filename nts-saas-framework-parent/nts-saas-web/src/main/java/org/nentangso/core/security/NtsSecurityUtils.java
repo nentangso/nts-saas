@@ -101,6 +101,10 @@ public final class NtsSecurityUtils implements InitializingBean {
         } else if (authentication.getPrincipal() instanceof String) {
             firstName = (String) authentication.getPrincipal();
         }
+        return toDisplayName(firstName, lastName);
+    }
+
+    public static String toDisplayName(String firstName, String lastName) {
         String displayName = Stream.of(firstName, lastName)
             .sorted(instance.reverseOrderOfDisplayName ? Comparator.reverseOrder() : Comparator.naturalOrder())
             .map(StringUtils::trimToNull)
