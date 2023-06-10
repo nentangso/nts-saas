@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.nentangso</groupId>
         <artifactId>nts-saas-framework-parent</artifactId>
-        <version>1.3.0-SNAPSHOT</version>
+        <version>1.3.0-RC6</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -65,27 +65,27 @@
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-web-core</artifactId>
-                <version>1.3.0-SNAPSHOT</version>
+                <version>1.3.0-RC6</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-web</artifactId>
-                <version>1.3.0-SNAPSHOT</version>
+                <version>1.3.0-RC6</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-webflux</artifactId>
-                <version>1.3.0-SNAPSHOT</version>
+                <version>1.3.0-RC6</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-starter-web</artifactId>
-                <version>1.3.0-SNAPSHOT</version>
+                <version>1.3.0-RC6</version>
             </dependency>
             <dependency>
                 <groupId>org.nentangso</groupId>
                 <artifactId>nts-saas-starter-webflux</artifactId>
-                <version>1.3.0-SNAPSHOT</version>
+                <version>1.3.0-RC6</version>
             </dependency>
             <!-- Mobile send notification libs -->
             <dependency>
