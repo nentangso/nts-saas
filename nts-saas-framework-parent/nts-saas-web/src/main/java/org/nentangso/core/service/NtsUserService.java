@@ -101,7 +101,7 @@ public class NtsUserService {
         return authorityRepository.findAll().stream().map(NtsAuthority::getName).collect(Collectors.toList());
     }
 
-    private NtsUserEntity syncUserWithIdP(Map<String, Object> details, NtsUserEntity user) {
+    protected NtsUserEntity syncUserWithIdP(Map<String, Object> details, NtsUserEntity user) {
         // save authorities in to sync user roles/groups between IdP and JHipster's local database
         Collection<String> dbAuthorities = getAuthorities();
         Collection<String> userAuthorities = user.getAuthorities().stream().map(NtsAuthority::getName).collect(Collectors.toList());
@@ -176,7 +176,7 @@ public class NtsUserService {
         return userMapper.userToAdminUserDTO(syncUserWithIdP(attributes, user));
     }
 
-    private static NtsUserEntity getUser(Map<String, Object> details) {
+    protected NtsUserEntity getUser(Map<String, Object> details) {
         NtsUserEntity user = new NtsUserEntity();
         Boolean activated = Boolean.TRUE;
         // handle resource server JWT, where sub claim is email and uid is ID
@@ -229,7 +229,7 @@ public class NtsUserService {
         return user;
     }
 
-    private void clearUserCaches(NtsUserEntity user) {
+    protected void clearUserCaches(NtsUserEntity user) {
         Objects.requireNonNull(cacheManager.getCache(NtsUserRepository.USERS_BY_LOGIN_CACHE)).evict(user.getLogin());
         if (user.getEmail() != null) {
             Objects.requireNonNull(cacheManager.getCache(NtsUserRepository.USERS_BY_EMAIL_CACHE)).evict(user.getEmail());

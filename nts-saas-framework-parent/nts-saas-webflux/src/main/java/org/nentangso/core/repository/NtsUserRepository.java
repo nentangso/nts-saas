@@ -77,7 +77,7 @@ class NtsUserRepositoryInternalImpl implements NtsUserRepositoryInternal {
         long size = pageable.getPageSize();
 
         return db
-            .sql("SELECT * FROM nts_user u LEFT JOIN nts_user_authorities ua ON u.id=ua.user_id")
+            .sql("SELECT * FROM nts_users u LEFT JOIN nts_user_authorities ua ON u.id=ua.user_id")
             .map((row, metadata) ->
                 Tuples.of(
                     r2dbcConverter.read(NtsUserEntity.class, row, metadata),
@@ -103,7 +103,7 @@ class NtsUserRepositoryInternalImpl implements NtsUserRepositoryInternal {
 
     private Mono<NtsUserEntity> findOneWithAuthoritiesBy(String fieldName, Object fieldValue) {
         return db
-            .sql("SELECT * FROM nts_user u LEFT JOIN nts_user_authorities ua ON u.id=ua.user_id WHERE u." + fieldName + " = :" + fieldName)
+            .sql("SELECT * FROM nts_users u LEFT JOIN nts_user_authorities ua ON u.id=ua.user_id WHERE u." + fieldName + " = :" + fieldName)
             .bind(fieldName, fieldValue)
             .map((row, metadata) ->
                 Tuples.of(
