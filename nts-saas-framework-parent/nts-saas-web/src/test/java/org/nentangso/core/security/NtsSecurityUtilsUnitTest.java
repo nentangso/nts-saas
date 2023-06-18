@@ -146,4 +146,11 @@ class NtsSecurityUtilsUnitTest {
         assertThat(NtsSecurityUtils.hasCurrentUserNoneOfAuthorities(NtsAuthoritiesConstants.USER, NtsAuthoritiesConstants.ADMIN)).isFalse();
         assertThat(NtsSecurityUtils.hasCurrentUserNoneOfAuthorities(NtsAuthoritiesConstants.ANONYMOUS, NtsAuthoritiesConstants.ADMIN)).isTrue();
     }
+
+    @Test
+    void testDisplayName() {
+        assertThat(NtsSecurityUtils.toDisplayName("Foo ", "Bar")).isEqualTo("Bar Foo");
+        assertThat(NtsSecurityUtils.toDisplayName(" Foz ", " Baz")).isEqualTo("Baz Foz");
+        assertThat(NtsSecurityUtils.toDisplayName(null, null)).isNull();
+    }
 }

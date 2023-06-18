@@ -105,8 +105,11 @@ public final class NtsSecurityUtils implements InitializingBean {
     }
 
     public static String toDisplayName(String firstName, String lastName) {
-        String displayName = Stream.of(firstName, lastName)
-            .sorted(instance.reverseOrderOfDisplayName ? Comparator.reverseOrder() : Comparator.naturalOrder())
+        List<String> names = Arrays.asList(firstName, lastName);
+        if (instance.reverseOrderOfDisplayName) {
+            Collections.reverse(names);
+        }
+        String displayName = names.stream()
             .map(StringUtils::trimToNull)
             .filter(Objects::nonNull)
             .collect(Collectors.joining(" "));
