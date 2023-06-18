@@ -117,4 +117,11 @@ class NtsSecurityUtilsUnitTest {
         hasCurrentUserThisAuthority = NtsSecurityUtils.hasCurrentUserThisAuthority(NtsAuthoritiesConstants.ADMIN).contextWrite(context).block();
         assertThat(hasCurrentUserThisAuthority).isFalse();
     }
+
+    @Test
+    void testDisplayName() {
+        assertThat(NtsSecurityUtils.toDisplayName("Foo ", "Bar")).isEqualTo("Bar Foo");
+        assertThat(NtsSecurityUtils.toDisplayName(" Foz ", " Baz")).isEqualTo("Baz Foz");
+        assertThat(NtsSecurityUtils.toDisplayName(null, null)).isNull();
+    }
 }
