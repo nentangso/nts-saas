@@ -40,4 +40,13 @@ public class NtsDefaultLocationCacheable {
         RBucket<Map<Long, NtsDefaultLocationDTO>> bucket = redissonClient.getBucket(cacheKey, new SerializationCodec());
         bucket.set(items);
     }
+
+    public boolean clearCacheLocations() {
+        if (!ntsProperties.getHelper().getLocation().getCache().isEnabled()) {
+            return true;
+        }
+        final String cacheKey = generateCacheKey();
+        RBucket<Map<Long, NtsDefaultLocationDTO>> bucket = redissonClient.getBucket(cacheKey, new SerializationCodec());
+        return bucket.delete();
+    }
 }
