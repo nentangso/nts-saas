@@ -10,6 +10,7 @@ import reactor.core.publisher.Mono;
 
 import javax.cache.configuration.Configuration;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class NtsDefaultLocationCacheable {
     private final NtsProperties ntsProperties;
@@ -33,12 +34,25 @@ public class NtsDefaultLocationCacheable {
         return ntsProperties.getHelper().getLocation().getCache().getKeyPrefix() + "locations_by_id";
     }
 
+    private Long getExpiration() {
+        return ntsProperties.getHelper().getLocation().getCache().getExpiration();
+    }
+
     public Mono<Map<Long, NtsDefaultLocationDTO>> setCacheLocations(Map<Long, NtsDefaultLocationDTO> items) {
         if (!ntsProperties.getHelper().getLocation().getCache().isEnabled()) {
             return Mono.just(items);
         }
         final String cacheKey = generateCacheKey();
         RBucketReactive<Map<Long, NtsDefaultLocationDTO>> bucket = redissonClient.getBucket(cacheKey, new SerializationCodec());
-        return bucket.set(items).thenReturn(items);
+        return bucket.set(items, getExpiration(), TimeUnit.SECONDS).thenReturn(items);
+    }
+
+    public Mono<Boolean> clearCacheLocations() {
+        if (!ntsProperties.getHelper().getLocation().getCache().isEnabled()) {
+            return Mono.just(true);
+        }
+        final String cacheKey = generateCacheKey();
+        RBucketReactive<Map<Long, NtsDefaultLocationDTO>> bucket = redissonClient.getBucket(cacheKey, new SerializationCodec());
+        return bucket.delete();
     }
 }

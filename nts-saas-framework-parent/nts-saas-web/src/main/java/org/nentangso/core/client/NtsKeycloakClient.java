@@ -5,9 +5,8 @@ import org.nentangso.core.service.helper.location.NtsKeycloakLocationProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -32,5 +31,15 @@ public interface NtsKeycloakClient {
     ResponseEntity<KeycloakClientRole> findClientRole(
         @PathVariable("clientId") String internalClientId,
         @PathVariable("roleName") String roleName
+    );
+
+    @PostMapping("/clients/{clientId}/roles")
+    ResponseEntity<Void> createClientRole(@PathVariable("clientId") String internalClientId, @RequestBody KeycloakClientRole keycloakClientRole);
+
+    @PutMapping("/clients/{clientId}/roles/{roleName}")
+    ResponseEntity<Void> updateClientRole(
+            @PathVariable("clientId") String internalClientId,
+            @PathVariable("roleName") String roleName,
+            @RequestBody KeycloakClientRole keycloakClientRole
     );
 }
