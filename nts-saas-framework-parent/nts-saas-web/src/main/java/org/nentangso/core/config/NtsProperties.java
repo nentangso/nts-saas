@@ -107,6 +107,7 @@ public class NtsProperties {
             public static class CacheProperties {
                 private boolean enabled = true;
                 private String keyPrefix = "nts:helper:location:";
+                private Long expiration = 3600L;
 
                 public boolean isEnabled() {
                     return enabled;
@@ -122,6 +123,14 @@ public class NtsProperties {
 
                 public void setKeyPrefix(String keyPrefix) {
                     this.keyPrefix = keyPrefix;
+                }
+
+                public Long getExpiration() {
+                    return expiration;
+                }
+
+                public void setExpiration(Long expiration) {
+                    this.expiration = expiration;
                 }
             }
         }
