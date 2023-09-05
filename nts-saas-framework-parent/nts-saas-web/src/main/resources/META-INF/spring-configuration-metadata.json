@@ -67,6 +67,12 @@
       "sourceType": "org.nentangso.core.config.NtsProperties"
     },
     {
+      "name": "nts.helper.location.cache.expiration",
+      "type": "java.lang.String",
+      "description": "The time expiration of redis cache keys",
+      "sourceType": "org.nentangso.core.config.NtsProperties"
+    },
+    {
       "name": "nts.helper.location.keycloak.client-registration-id",
       "type": "java.lang.String",
       "defaultValue": "nts-helper-location",

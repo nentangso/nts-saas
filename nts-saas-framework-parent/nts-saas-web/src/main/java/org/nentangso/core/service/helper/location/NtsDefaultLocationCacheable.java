@@ -9,6 +9,7 @@ import org.redisson.jcache.configuration.RedissonConfiguration;
 
 import javax.cache.configuration.Configuration;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class NtsDefaultLocationCacheable {
     private final NtsProperties ntsProperties;
@@ -28,6 +29,10 @@ public class NtsDefaultLocationCacheable {
         return bucket.get();
     }
 
+    private Long getExpiration() {
+        return ntsProperties.getHelper().getLocation().getCache().getExpiration();
+    }
+
     private String generateCacheKey() {
         return ntsProperties.getHelper().getLocation().getCache().getKeyPrefix() + "locations_by_id";
     }
@@ -38,7 +43,7 @@ public class NtsDefaultLocationCacheable {
         }
         final String cacheKey = generateCacheKey();
         RBucket<Map<Long, NtsDefaultLocationDTO>> bucket = redissonClient.getBucket(cacheKey, new SerializationCodec());
-        bucket.set(items);
+        bucket.set(items, getExpiration(), TimeUnit.SECONDS);
     }
 
     public boolean clearCacheLocations() {
